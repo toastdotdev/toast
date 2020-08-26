@@ -1,14 +1,17 @@
+use anyhow::{anyhow, Result};
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
+
 use structopt::StructOpt;
 // use swc;
 use swc::{
     self,
     config::{Config, JscConfig, JscTarget, Options, TransformConfig},
 };
-use swc_ecma_visit::{noop_visit_mut_type, FoldWith, VisitMut, VisitMutWith};
+/*FoldWith,  VisitMut */
+use swc_ecma_visit::VisitMutWith;
 
 use swc_common::{
     errors::{ColorConfig, Handler},
@@ -70,7 +73,7 @@ fn main() {
         .expect("failed to load file");
 
     // Custom Transforms test
-    let parsed_program = compiler
+    let _parsed_program = compiler
         .parse_js(
             fm.clone(),
             JscTarget::Es2020,
@@ -85,17 +88,14 @@ fn main() {
             true,
         )
         .and_then(|program| {
-            match &program {
-                Program::Module(module) => {
-                    // println!("{:#?}", module);
-                    // module.fold_with()
-                    module.visit_mut_with(&mut SVGImportToComponent);
-                }
-                Program::Script(script) => {
-                    println!("well... that was unexpected. This should be a module");
-                }
+            if let Program::Module(mut module) = program {
+                // println!("Matched {:?}!", i);
+                module.visit_mut_with(&mut SVGImportToComponent);
+                return Ok(Program::Module(module));
+            } else {
+                // return error
+                return Err(anyhow!("it's a script, dang"));
             }
-            Ok(program)
         });
 
     let result = compiler.process_js_file(

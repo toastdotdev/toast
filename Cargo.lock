@@ -1324,6 +1324,7 @@ checksum = "238ce071d267c5710f9d31451efec16c5ee22de34df17cc05e56cbc92e967117"
 name = "toast"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "structopt",
  "swc",
  "swc_atoms",
