@@ -26,6 +26,13 @@ mod toast;
 
 use toast::svg::SVGImportToComponent;
 
+fn abspath(input_dir: &std::ffi::OsStr) -> Result<PathBuf, std::ffi::OsString> {
+    match PathBuf::from(input_dir).canonicalize() {
+        Ok(dir) => Ok(dir),
+        Err(v) => Err(input_dir.into()),
+    }
+}
+
 #[derive(Debug, StructOpt)]
 #[structopt(name = "toast", about = "The best place to stack your JAM")]
 enum Toast {
@@ -36,7 +43,7 @@ enum Toast {
         debug: bool,
 
         /// Input file
-        #[structopt(parse(from_os_str))]
+        #[structopt(parse(try_from_os_str = abspath))]
         input_dir: PathBuf,
 
         /// Output file, stdout if not present
@@ -58,6 +65,7 @@ fn main() {
     // event.add_field("key", Value::String("val".to_string())), event.add(data)
     let opt = Toast::from_args();
     println!("{:?}", opt);
+
     let cm = Arc::<SourceMap>::default();
     let handler = Arc::new(Handler::with_tty_emitter(
         ColorConfig::Auto,
@@ -90,7 +98,9 @@ fn main() {
         .and_then(|program| {
             if let Program::Module(mut module) = program {
                 // println!("Matched {:?}!", i);
-                module.visit_mut_with(&mut SVGImportToComponent);
+                module.visit_mut_with(&mut SVGImportToComponent {
+                    filepath: Path::new("test-toast-site/src/pages/index.js"),
+                });
                 return Ok(Program::Module(module));
             } else {
                 // return error
