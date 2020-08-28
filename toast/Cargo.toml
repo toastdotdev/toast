@@ -1,0 +1,25 @@
+[package]
+name = "toast"
+version = "0.1.0"
+authors = ["Christopher Biscardi <chris@christopherbiscardi.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+structopt = { version = "0.3.15" }
+anyhow = { version = "^1.0.32" }
+svgcleaner = { version = "^0.9.5" }
+swc = { git = "https://github.com/swc-project/swc" }
+swc_atoms= { git = "https://github.com/swc-project/swc" }
+swc_ecma_ast= { git = "https://github.com/swc-project/swc" }
+swc_ecma_codegen= { git = "https://github.com/swc-project/swc" }
+swc_ecma_parser= { git = "https://github.com/swc-project/swc" }
+swc_ecma_preset_env= { git = "https://github.com/swc-project/swc" }
+swc_ecma_transforms= { git = "https://github.com/swc-project/swc" }
+swc_ecma_visit= { git = "https://github.com/swc-project/swc" }
+swc_visit= { git = "https://github.com/swc-project/swc" }
+
+[dependencies.swc_common]
+git = "https://github.com/swc-project/swc"
+features = ["tty-emitter"]

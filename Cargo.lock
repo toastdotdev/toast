@@ -1162,6 +1162,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "svgrs"
+version = "0.1.0"
+
+[[package]]
 name = "swc"
 version = "0.1.0"
 source = "git+https://github.com/swc-project/swc#511dc54961e957263531639da60cd922496414be"
