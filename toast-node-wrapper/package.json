@@ -1,0 +1,13 @@
+{
+  "name": "toastrs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "bin": {
+    "toast": "./toast"
+  },
+  "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
+  "license": "MIT",
+  "dependencies": {
+    "@svgr/cli": "^5.4.0"
+  }
+}
