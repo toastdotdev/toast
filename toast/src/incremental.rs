@@ -64,52 +64,52 @@ pub fn incremental_compile(
             e
         })
         .collect();
-
-    let cm = Arc::<SourceMap>::default();
-    let handler = Arc::new(Handler::with_tty_emitter(
-        ColorConfig::Auto,
-        true,
-        false,
-        Some(cm.clone()),
-    ));
-
-    let compiler = swc::Compiler::new(cm.clone(), handler.clone());
-
-    let fm = cm
-        .load_file(&input_dir.join("src/pages/index.js"))
-        .expect("failed to load file");
-
-    let result = compiler.process_js_file(
-        fm,
-        &Options {
-            is_module: true,
-            config: Some(Config {
-                jsc: JscConfig {
-                    syntax: Some(Syntax::Es(EsConfig {
-                        jsx: true,
-                        nullish_coalescing: true,
-                        optional_chaining: true,
-                        dynamic_import: true,
-                        ..Default::default()
-                    })),
-                    transform: Some(TransformConfig {
-                        react: react::Options {
-                            pragma: "Preact.h".to_string(),
-                            pragma_frag: "Preact.Fragment".to_string(),
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                },
-                ..Default::default()
-            }),
-            ..Default::default()
-        },
-    );
-
-    match result {
-        Ok(v) => println!("parsed file: {:?}", v),
-        Err(e) => println!("error parsing file: {:?}", e),
-    }
 }
+
+// let cm = Arc::<SourceMap>::default();
+// let handler = Arc::new(Handler::with_tty_emitter(
+//     ColorConfig::Auto,
+//     true,
+//     false,
+//     Some(cm.clone()),
+// ));
+
+// let compiler = swc::Compiler::new(cm.clone(), handler.clone());
+
+// let fm = cm
+//     .load_file(&input_dir.join("src/pages/index.js"))
+//     .expect("failed to load file");
+
+// let result = compiler.process_js_file(
+//     fm,
+//     &Options {
+//         is_module: true,
+//         config: Some(Config {
+//             jsc: JscConfig {
+//                 syntax: Some(Syntax::Es(EsConfig {
+//                     jsx: true,
+//                     nullish_coalescing: true,
+//                     optional_chaining: true,
+//                     dynamic_import: true,
+//                     ..Default::default()
+//                 })),
+//                 transform: Some(TransformConfig {
+//                     react: react::Options {
+//                         pragma: "Preact.t".to_string(),
+//                         pragma_frag: "Preact.Fragment".to_string(),
+//                         ..Default::default()
+//                     },
+//                     ..Default::default()
+//                 }),
+//                 ..Default::default()
+//             },
+//             ..Default::default()
+//         }),
+//         ..Default::default()
+//     },
+// );
+
+// match result {
+//     Ok(v) => println!("parsed file: {:?}", v),
+//     Err(e) => println!("error parsing file: {:?}", e),
+// }

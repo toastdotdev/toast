@@ -15,6 +15,7 @@ use swc::{
 use swc_ecma_visit::VisitMutWith;
 
 use swc_common::{
+    chain,
     errors::{ColorConfig, Handler},
     FileName, SourceMap,
 };
@@ -27,6 +28,31 @@ use crate::toast::cache::init;
 use crate::toast::svg::SVGImportToComponent;
 
 pub fn compile_js_for_browser(source: String, filename: String, npm_bin_dir: String) -> String {
+    let opts = &Options {
+        is_module: true,
+        config: Some(Config {
+            jsc: JscConfig {
+                syntax: Some(Syntax::Es(EsConfig {
+                    jsx: true,
+                    nullish_coalescing: true,
+                    optional_chaining: true,
+                    dynamic_import: true,
+                    ..Default::default()
+                })),
+                transform: Some(TransformConfig {
+                    react: react::Options {
+                        pragma: "Preact.t".to_string(),
+                        pragma_frag: "Preact.Fragment".to_string(),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                ..Default::default()
+            },
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
     let cm = Arc::<SourceMap>::default();
     let handler = Arc::new(Handler::with_tty_emitter(
         ColorConfig::Auto,
@@ -37,43 +63,44 @@ pub fn compile_js_for_browser(source: String, filename: String, npm_bin_dir: Str
 
     let compiler = swc::Compiler::new(cm.clone(), handler.clone());
 
-    let fm = cm.new_source_file(FileName::Custom(filename), source);
+    let fm = cm.new_source_file(FileName::Custom(filename.clone()), source);
     // .load_file(&input_dir.join("src/pages/index.js"))
     // .expect("failed to load file");
-
-    let _parsed_program = compiler
-        .parse_js(
-            fm.clone(),
-            JscTarget::Es2020,
-            Syntax::Es(EsConfig {
-                jsx: true,
-                nullish_coalescing: true,
-                optional_chaining: true,
-                dynamic_import: true,
-                ..Default::default()
-            }),
-            true,
-            true,
-        )
-        .and_then(|program| {
-            if let Program::Module(mut module) = program {
-                // println!("Matched {:?}!", i);
-                module.visit_mut_with(&mut SVGImportToComponent {
-                    filepath: Path::new("test-toast-site/src/pages/index.js"),
-                    npm_bin_dir: npm_bin_dir,
-                });
-                // program.print();
-                return Ok(Program::Module(module));
-            } else {
-                // return error
-                return Err(anyhow!("it's a script, dang"));
-            }
-        });
-    let output = compiler.print(
-        &_parsed_program.unwrap(),
-        SourceMapsConfig::default(),
-        None,
+    let parsed_program = compiler.parse_js(
+        fm.clone(),
+        JscTarget::Es2020,
+        Syntax::Es(EsConfig {
+            jsx: true,
+            nullish_coalescing: true,
+            optional_chaining: true,
+            dynamic_import: true,
+            ..Default::default()
+        }),
+        true,
         true,
     );
+    let built_config = compiler.config_for_file(opts, &FileName::Custom(filename.clone()));
+
+    let result = compiler.transform(
+        parsed_program.unwrap().clone(),
+        false,
+        built_config.unwrap().pass,
+    );
+    // .and_then(|program| {
+    //     if let Program::Module(mut module) = program {
+    //         // println!("Matched {:?}!", i);
+    //         module.visit_mut_with(&mut SVGImportToComponent {
+    //             filepath: Path::new(&filename),
+    //             npm_bin_dir: npm_bin_dir,
+    //         });
+    //         // program.print();
+    //         return Ok(Program::Module(module));
+    //     } else {
+    //         // return error
+    //         return Err(anyhow!("it's a script, dang"));
+    //     }
+    // });
+
+    let output = compiler.print(&result, SourceMapsConfig::default(), None, false);
     return output.unwrap().code;
 }
