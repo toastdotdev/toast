@@ -85,15 +85,12 @@ pub fn incremental_compile(
     for (source_id, output_file) in files_by_source_id.iter() {
         let browser_output_file = output_dir.join(Path::new(&output_file.dest));
         let js_browser = cache.get_js_for_browser(source_id);
-        println!("{:?}", browser_output_file);
         std::fs::create_dir_all(browser_output_file.parent().unwrap());
         let res = std::fs::write(browser_output_file, js_browser);
-        println!("{:?}", res);
 
         let js_node = cache.get_js_for_server(source_id);
         let mut node_output_file = tmp_dir.clone();
         node_output_file.push(&output_file.dest);
-        println!("{:?}", node_output_file);
         std::fs::create_dir_all(node_output_file.parent().unwrap());
         let node_res = std::fs::write(node_output_file, js_node);
     }

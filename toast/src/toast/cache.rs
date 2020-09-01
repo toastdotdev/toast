@@ -21,7 +21,7 @@ impl Cache {
     }
     pub fn get_js_for_server(&mut self, key: &str) -> String {
         let db: &mut dyn Files = &mut self.db;
-        let js = db.js_for_server(key.to_string());
+        let js = db.js_for_server(key.to_string(), self.npm_bin_dir.clone());
         js
     }
 }
