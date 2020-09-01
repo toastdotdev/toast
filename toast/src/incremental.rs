@@ -3,6 +3,7 @@ use walkdir::{DirEntry, WalkDir};
 
 use std::{
     collections::HashMap,
+    env,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -47,6 +48,8 @@ pub fn incremental_compile(
         npm_bin_dir,
     }: IncrementalOpts,
 ) {
+    let mut tmp_dir = env::temp_dir();
+
     let mut cache = init(npm_bin_dir.clone());
     let files_by_source_id: HashMap<String, OutputFile> =
         WalkDir::new(&project_root_dir.join("src"))
@@ -80,13 +83,19 @@ pub fn incremental_compile(
             });
 
     for (source_id, output_file) in files_by_source_id.iter() {
-        let output_file = output_dir.join(Path::new(&output_file.dest));
+        let browser_output_file = output_dir.join(Path::new(&output_file.dest));
         let js_browser = cache.get_js_for_browser(source_id);
-        println!("{:?}", output_file);
-        std::fs::create_dir_all(output_file.parent().unwrap());
-        let res = std::fs::write(output_file, js_browser);
+        println!("{:?}", browser_output_file);
+        std::fs::create_dir_all(browser_output_file.parent().unwrap());
+        let res = std::fs::write(browser_output_file, js_browser);
         println!("{:?}", res);
+
         let js_node = cache.get_js_for_server(source_id);
+        let mut node_output_file = tmp_dir.clone();
+        node_output_file.push(&output_file.dest);
+        println!("{:?}", node_output_file);
+        std::fs::create_dir_all(node_output_file.parent().unwrap());
+        let node_res = std::fs::write(node_output_file, js_node);
     }
 }
 
