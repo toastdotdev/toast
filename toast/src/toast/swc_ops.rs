@@ -64,8 +64,7 @@ pub fn compile_js_for_browser(source: String, filename: String, npm_bin_dir: Str
     let compiler = swc::Compiler::new(cm.clone(), handler.clone());
 
     let fm = cm.new_source_file(FileName::Custom(filename.clone()), source);
-    // .load_file(&input_dir.join("src/pages/index.js"))
-    // .expect("failed to load file");
+
     let parsed_program = compiler.parse_js(
         fm.clone(),
         JscTarget::Es2020,

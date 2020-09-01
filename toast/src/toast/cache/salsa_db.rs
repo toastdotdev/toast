@@ -25,7 +25,6 @@ fn js_for_server(db: &dyn Files, key: String) -> String {
 #[derive(Default)]
 pub struct SalsaToastDatabaseStruct {
     pub storage: salsa::Storage<Self>,
-    pub npm_bin_dir: String,
 }
 
 impl salsa::Database for SalsaToastDatabaseStruct {}

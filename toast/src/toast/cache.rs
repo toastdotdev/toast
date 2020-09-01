@@ -17,13 +17,11 @@ impl Cache {
     pub fn get_js_for_browser(&mut self, key: &str) -> String {
         let db: &mut dyn Files = &mut self.db;
         let js = db.js_for_browser(key.to_string(), self.npm_bin_dir.clone());
-        println!("js4browser: {}", js);
         js
     }
     pub fn get_js_for_server(&mut self, key: &str) -> String {
         let db: &mut dyn Files = &mut self.db;
         let js = db.js_for_server(key.to_string());
-        println!("js4server: {}", js);
         js
     }
 }

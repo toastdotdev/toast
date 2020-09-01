@@ -1,5 +1,6 @@
 use std::process::Command;
 
+use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
 mod cli_args;
@@ -44,8 +45,16 @@ fn main() {
             output_dir,
         } => incremental_compile(IncrementalOpts {
             debug,
-            input_dir,
-            output_dir,
+            project_root_dir: input_dir.clone(),
+            output_dir: output_dir
+                .or_else(|| {
+                    // if there's no output_dir specified by the user,
+                    // put the dir on the same level as the input dir
+                    let full_output_dir = input_dir.parent().unwrap().join("public");
+                    std::fs::create_dir_all(&full_output_dir);
+                    Some(full_output_dir.canonicalize().unwrap().to_path_buf())
+                })
+                .unwrap(),
             npm_bin_dir,
         }),
     }

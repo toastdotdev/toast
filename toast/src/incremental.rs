@@ -2,6 +2,7 @@ use anyhow::anyhow;
 use walkdir::{DirEntry, WalkDir};
 
 use std::{
+    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -28,42 +29,65 @@ use crate::toast::svg::SVGImportToComponent;
 
 pub struct IncrementalOpts {
     pub debug: bool,
-    pub input_dir: PathBuf,
-    pub output_dir: Option<PathBuf>,
+    pub project_root_dir: PathBuf,
+    pub output_dir: PathBuf,
     pub npm_bin_dir: String,
+}
+
+#[derive(Debug)]
+struct OutputFile {
+    dest: String,
 }
 
 pub fn incremental_compile(
     IncrementalOpts {
         debug,
-        input_dir,
+        project_root_dir,
         output_dir,
         npm_bin_dir,
     }: IncrementalOpts,
 ) {
     let mut cache = init(npm_bin_dir.clone());
-    let files: Vec<DirEntry> = WalkDir::new(&input_dir)
-        .into_iter()
-        .filter(|e| {
-            return e.as_ref().map_or(false, |f| {
-                f.file_name()
+    let files_by_source_id: HashMap<String, OutputFile> =
+        WalkDir::new(&project_root_dir.join("src"))
+            .into_iter()
+            .filter(|result| {
+                return result.as_ref().map_or(false, |dir_entry| {
+                    dir_entry
+                        .file_name()
+                        .to_str()
+                        .map(|filename| filename.ends_with(".js"))
+                        .unwrap_or(false)
+                });
+            })
+            // insert source files into cache and return a
+            // HashMap so we can access the entries and such later
+            // by source_id
+            .fold(HashMap::new(), |mut map, entry| {
+                let e = entry.unwrap();
+                let file_stuff = std::fs::read(e.path()).unwrap();
+                let source_id = e
+                    .path()
+                    .strip_prefix(&project_root_dir)
+                    .unwrap()
                     .to_str()
-                    .map(|s| s.ends_with(".js"))
-                    .unwrap_or(false)
+                    .unwrap();
+                cache.set_source(source_id, file_stuff);
+                map.entry(String::from(source_id)).or_insert(OutputFile {
+                    dest: source_id.to_string(),
+                });
+                map
             });
-        })
-        .map(|entry| {
-            let e = entry.unwrap();
-            let file_stuff = std::fs::read(e.path()).unwrap();
-            // println!("{}", e.path().strip_prefix(&input_dir).unwrap().display());
-            let source_id = e.path().strip_prefix(&input_dir).unwrap().to_str().unwrap();
-            cache.set_source(source_id, file_stuff);
-            cache.get_js_for_browser(source_id);
-            cache.get_js_for_server(source_id);
-            // println!("path: {:?}", file_stuff);
-            e
-        })
-        .collect();
+
+    for (source_id, output_file) in files_by_source_id.iter() {
+        let output_file = output_dir.join(Path::new(&output_file.dest));
+        let js_browser = cache.get_js_for_browser(source_id);
+        println!("{:?}", output_file);
+        std::fs::create_dir_all(output_file.parent().unwrap());
+        let res = std::fs::write(output_file, js_browser);
+        println!("{:?}", res);
+        let js_node = cache.get_js_for_server(source_id);
+    }
 }
 
 // let cm = Arc::<SourceMap>::default();
@@ -77,7 +101,7 @@ pub fn incremental_compile(
 // let compiler = swc::Compiler::new(cm.clone(), handler.clone());
 
 // let fm = cm
-//     .load_file(&input_dir.join("src/pages/index.js"))
+//     .load_file(&project_root_dir.join("src/pages/index.js"))
 //     .expect("failed to load file");
 
 // let result = compiler.process_js_file(
