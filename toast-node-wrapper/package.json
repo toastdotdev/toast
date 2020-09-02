@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "bin": {
-    "toast": "./toast"
+    "toast": "./toast",
+    "toast-render": "./toast-render"
   },
   "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
   "license": "MIT",
   "dependencies": {
-    "@svgr/cli": "^5.4.0"
+    "@mdx-js/preact": "^2.0.0-next.7",
+    "@svgr/cli": "^5.4.0",
+    "module-alias": "^2.2.2",
+    "preact": "^10.4.8",
+    "preact-render-to-string": "^5.1.10",
+    "react-helmet": "^6.1.0"
   }
 }

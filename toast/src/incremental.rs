@@ -26,6 +26,7 @@ use swc_ecma_parser::{EsConfig, Syntax};
 use swc_ecma_transforms::react;
 
 use crate::toast::cache::init;
+use crate::toast::node::render_to_html;
 use crate::toast::svg::SVGImportToComponent;
 
 pub struct IncrementalOpts {
@@ -48,7 +49,12 @@ pub fn incremental_compile(
         npm_bin_dir,
     }: IncrementalOpts,
 ) {
-    let mut tmp_dir = env::temp_dir();
+    let tmp_dir = {
+        let mut dir = project_root_dir.clone();
+        dir.push(".tmp");
+        dir
+    };
+    std::fs::create_dir_all(&tmp_dir);
 
     let mut cache = init(npm_bin_dir.clone());
     let files_by_source_id: HashMap<String, OutputFile> =
@@ -91,9 +97,22 @@ pub fn incremental_compile(
         let js_node = cache.get_js_for_server(source_id);
         let mut node_output_file = tmp_dir.clone();
         node_output_file.push(&output_file.dest);
+        // TODO
+        node_output_file.set_extension("mjs");
         std::fs::create_dir_all(node_output_file.parent().unwrap());
         let node_res = std::fs::write(node_output_file, js_node);
     }
+
+    let file_list = files_by_source_id
+        .iter()
+        .map(|(_, output_file)| output_file.dest.clone())
+        .collect::<Vec<String>>();
+    render_to_html(
+        tmp_dir.into_os_string().into_string().unwrap(),
+        output_dir.into_os_string().into_string().unwrap(),
+        file_list,
+        npm_bin_dir,
+    );
 }
 
 // let cm = Arc::<SourceMap>::default();

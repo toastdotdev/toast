@@ -50,7 +50,7 @@ fn main() {
                 .or_else(|| {
                     // if there's no output_dir specified by the user,
                     // put the dir on the same level as the input dir
-                    let full_output_dir = input_dir.parent().unwrap().join("public");
+                    let full_output_dir = input_dir.join("public");
                     std::fs::create_dir_all(&full_output_dir);
                     Some(full_output_dir.canonicalize().unwrap().to_path_buf())
                 })
