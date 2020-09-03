@@ -10,18 +10,13 @@ const [node, bin, srcDir, outputDir, ...args] = process.argv;
 main();
 
 async function main() {
-  args.map((file) => {
-    console.log(`from: ${path.resolve(srcDir, file)}`);
-    console.log(`to: ${path.resolve(outputDir, file)}`);
-  });
-
   // require pageWrapper
   let pageWrapper;
   const pageWrapperPath = path.resolve(srcDir, "src/page-wrapper");
   try {
     pageWrapper = require(pageWrapperPath).default;
   } catch (e) {
-    console.log("no user pagewrapper supplied");
+    // console.log("no user pagewrapper supplied");
   }
 
   // TODO: no data for now
