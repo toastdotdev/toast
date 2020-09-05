@@ -1,10 +1,4 @@
-use anyhow::anyhow;
-use walkdir::{DirEntry, WalkDir};
-
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::sync::Arc;
 
 // use swc;
 use swc::{
@@ -12,22 +6,28 @@ use swc::{
     config::{Config, JscConfig, JscTarget, Options, SourceMapsConfig, TransformConfig},
 };
 /*FoldWith,  VisitMut */
-use swc_ecma_visit::VisitMutWith;
+use swc_ecma_visit::{Fold, FoldWith};
 
 use swc_common::{
     chain,
     errors::{ColorConfig, Handler},
     FileName, SourceMap,
 };
-use swc_ecma_ast::Program;
 // use swc_ecma_ast::Program;
 use swc_ecma_parser::{EsConfig, Syntax};
 use swc_ecma_transforms::react;
 
-use crate::toast::cache::init;
-use crate::toast::svg::SVGImportToComponent;
+use crate::toast::{
+    breadbox::ImportMap, cache::init, svg::SVGImportToComponent,
+    swc_import_map_rewrite::SWCImportMapRewrite,
+};
 
-pub fn compile_js_for_browser(source: String, filename: String, npm_bin_dir: String) -> String {
+pub fn compile_js_for_browser(
+    source: String,
+    filename: String,
+    npm_bin_dir: String,
+    import_map: ImportMap,
+) -> String {
     let opts = &get_opts();
     let cm = Arc::<SourceMap>::default();
     let handler = Arc::new(Handler::with_tty_emitter(
@@ -43,9 +43,13 @@ pub fn compile_js_for_browser(source: String, filename: String, npm_bin_dir: Str
 
     let parsed_program = compiler.parse_js(fm.clone(), JscTarget::Es2020, get_syntax(), true, true);
     let built_config = compiler.config_for_file(opts, &FileName::Custom(filename.clone()));
-
+    let post_transform_program = parsed_program.and_then(|program| {
+        Ok(program.fold_with(&mut SWCImportMapRewrite {
+            import_map: &import_map,
+        }))
+    });
     let result = compiler.transform(
-        parsed_program.unwrap().clone(),
+        post_transform_program.unwrap().clone(),
         false,
         built_config.unwrap().pass,
     );

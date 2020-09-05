@@ -7,6 +7,7 @@
   "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
   "license": "MIT",
   "workspaces": [
-    "toast-node-wrapper"
+    "toast-node-wrapper",
+    "test-toast-site"
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "name": "test-toast-site",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
+  "license": "MIT",
+  "dependencies": {
+    "@sector/breadbox": "^0.0.4"
+  }
+}

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 mod salsa_db;
 
+use crate::toast::breadbox::ImportMap;
 use salsa_db::{Files, SalsaToastDatabaseStruct};
 
 pub struct Cache {
@@ -14,9 +15,9 @@ impl Cache {
         let db: &mut dyn Files = &mut self.db;
         db.set_source(key.to_string(), Arc::new(source));
     }
-    pub fn get_js_for_browser(&mut self, key: &str) -> String {
+    pub fn get_js_for_browser(&mut self, key: &str, import_map: ImportMap) -> String {
         let db: &mut dyn Files = &mut self.db;
-        let js = db.js_for_browser(key.to_string(), self.npm_bin_dir.clone());
+        let js = db.js_for_browser(key.to_string(), self.npm_bin_dir.clone(), import_map);
         js
     }
     pub fn get_js_for_server(&mut self, key: &str) -> String {

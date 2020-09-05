@@ -1,39 +1,20 @@
-use anyhow::anyhow;
-use walkdir::{DirEntry, WalkDir};
-
+use crate::toast::{breadbox::ImportMap, cache::init, node::render_to_html};
+use color_eyre::{
+    eyre::{eyre, Report, Result, WrapErr},
+    Section,
+};
 use std::{
     collections::HashMap,
-    env,
     path::{Path, PathBuf},
-    sync::Arc,
 };
-
-// use swc;
-use swc::{
-    self,
-    config::{Config, JscConfig, JscTarget, Options, TransformConfig},
-};
-/*FoldWith,  VisitMut */
-use swc_ecma_visit::VisitMutWith;
-
-use swc_common::{
-    errors::{ColorConfig, Handler},
-    SourceMap,
-};
-use swc_ecma_ast::Program;
-// use swc_ecma_ast::Program;
-use swc_ecma_parser::{EsConfig, Syntax};
-use swc_ecma_transforms::react;
-
-use crate::toast::cache::init;
-use crate::toast::node::render_to_html;
-use crate::toast::svg::SVGImportToComponent;
+use walkdir::WalkDir;
 
 pub struct IncrementalOpts {
     pub debug: bool,
     pub project_root_dir: PathBuf,
     pub output_dir: PathBuf,
     pub npm_bin_dir: String,
+    pub import_map: ImportMap,
 }
 
 #[derive(Debug)]
@@ -47,14 +28,20 @@ pub fn incremental_compile(
         project_root_dir,
         output_dir,
         npm_bin_dir,
+        import_map,
     }: IncrementalOpts,
-) {
+) -> Result<()> {
     let tmp_dir = {
         let mut dir = project_root_dir.clone();
         dir.push(".tmp");
         dir
     };
-    std::fs::create_dir_all(&tmp_dir);
+    std::fs::create_dir_all(&tmp_dir).wrap_err_with(|| {
+        format!(
+            "Failed to create directories for tmp_dir `{}`. Can not compile files into directory that doesn't exist, exiting.",
+            &tmp_dir.display()
+        )
+    })?;
 
     let mut cache = init(npm_bin_dir.clone());
     let files_by_source_id: HashMap<String, OutputFile> =
@@ -90,17 +77,27 @@ pub fn incremental_compile(
 
     for (source_id, output_file) in files_by_source_id.iter() {
         let browser_output_file = output_dir.join(Path::new(&output_file.dest));
-        let js_browser = cache.get_js_for_browser(source_id);
-        std::fs::create_dir_all(browser_output_file.parent().unwrap());
-        let res = std::fs::write(browser_output_file, js_browser);
+        let js_browser = cache.get_js_for_browser(source_id, import_map.clone());
+        std::fs::create_dir_all(&browser_output_file.parent().unwrap());
+        let _res = std::fs::write(&browser_output_file, js_browser).wrap_err_with(|| {
+            format!(
+                "Failed to write browser JS file for `{}`. ",
+                &browser_output_file.display()
+            )
+        })?;
 
         let js_node = cache.get_js_for_server(source_id);
         let mut node_output_file = tmp_dir.clone();
         node_output_file.push(&output_file.dest);
-        // TODO
         node_output_file.set_extension("mjs");
-        std::fs::create_dir_all(node_output_file.parent().unwrap());
-        let node_res = std::fs::write(node_output_file, js_node);
+        // TODO: handle directory creation errors gracefully
+        std::fs::create_dir_all(&node_output_file.parent().unwrap());
+        let _node_res = std::fs::write(&node_output_file, js_node).wrap_err_with(|| {
+            format!(
+                "Failed to write node JS file for `{}`. ",
+                &node_output_file.display()
+            )
+        })?;
     }
 
     let file_list = files_by_source_id
@@ -113,52 +110,5 @@ pub fn incremental_compile(
         file_list,
         npm_bin_dir,
     );
+    Ok(())
 }
-
-// let cm = Arc::<SourceMap>::default();
-// let handler = Arc::new(Handler::with_tty_emitter(
-//     ColorConfig::Auto,
-//     true,
-//     false,
-//     Some(cm.clone()),
-// ));
-
-// let compiler = swc::Compiler::new(cm.clone(), handler.clone());
-
-// let fm = cm
-//     .load_file(&project_root_dir.join("src/pages/index.js"))
-//     .expect("failed to load file");
-
-// let result = compiler.process_js_file(
-//     fm,
-//     &Options {
-//         is_module: true,
-//         config: Some(Config {
-//             jsc: JscConfig {
-//                 syntax: Some(Syntax::Es(EsConfig {
-//                     jsx: true,
-//                     nullish_coalescing: true,
-//                     optional_chaining: true,
-//                     dynamic_import: true,
-//                     ..Default::default()
-//                 })),
-//                 transform: Some(TransformConfig {
-//                     react: react::Options {
-//                         pragma: "Preact.t".to_string(),
-//                         pragma_frag: "Preact.Fragment".to_string(),
-//                         ..Default::default()
-//                     },
-//                     ..Default::default()
-//                 }),
-//                 ..Default::default()
-//             },
-//             ..Default::default()
-//         }),
-//         ..Default::default()
-//     },
-// );
-
-// match result {
-//     Ok(v) => println!("parsed file: {:?}", v),
-//     Err(e) => println!("error parsing file: {:?}", e),
-// }
