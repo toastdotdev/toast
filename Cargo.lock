@@ -190,9 +190,8 @@ dependencies = [
 
 [[package]]
 name = "color-eyre"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6799fa22451e23a9ebf735955c0aab5a4e772b1bcb2dbc4b791e43337015beae"
+version = "0.5.3-alpha.0"
+source = "git+https://github.com/yaahc/color-eyre?branch=panic-msg#cf8432b919f62de8a50c7c0c8b363418c2f3c92d"
 dependencies = [
  "backtrace",
  "color-spantrace",
@@ -557,6 +556,13 @@ name = "maybe-uninit"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "60302e4db3a61da70c0cb7991976248362f30319e88850c487b9b95bbf059e00"
+
+[[package]]
+name = "mdxrs"
+version = "0.1.0"
+dependencies = [
+ "nom",
+]
 
 [[package]]
 name = "memchr"
@@ -1725,6 +1731,7 @@ name = "toast"
 version = "0.1.0"
 dependencies = [
  "color-eyre",
+ "owo-colors",
  "salsa",
  "serde",
  "serde_json",

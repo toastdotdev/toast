@@ -1,6 +1,9 @@
 use color_eyre::eyre::{Result, WrapErr};
+use color_eyre::section::PanicMessage;
+use owo_colors::OwoColorize;
 use std::fs;
 use std::process::Command;
+use std::{fmt, panic::Location};
 use structopt::StructOpt;
 use tracing::instrument;
 
@@ -11,6 +14,47 @@ mod toast;
 use cli_args::Toast;
 use incremental::{incremental_compile, IncrementalOpts};
 use toast::breadbox::parse_import_map;
+
+struct MyPanicMessage;
+
+impl PanicMessage for MyPanicMessage {
+    fn display(&self, pi: &std::panic::PanicInfo<'_>, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{}", "The application panicked (crashed).".red())?;
+
+        // Print panic message.
+        let payload = pi
+            .payload()
+            .downcast_ref::<String>()
+            .map(String::as_str)
+            .or_else(|| pi.payload().downcast_ref::<&str>().cloned())
+            .unwrap_or("<non string panic payload>");
+
+        write!(f, "Message:  ")?;
+        writeln!(f, "{}", payload.cyan())?;
+
+        // If known, print panic location.
+        write!(f, "Location: ")?;
+        if let Some(loc) = pi.location() {
+            write!(f, "{}", loc.file().purple())?;
+            write!(f, ":")?;
+            write!(f, "{}", loc.line().purple())?;
+
+            write!(
+                f,
+                "\n\nConsider reporting the bug at {}",
+                custom_url(loc, payload)
+            )?;
+        } else {
+            write!(f, "<unknown>")?;
+        }
+
+        Ok(())
+    }
+}
+
+fn custom_url(location: &Location<'_>, message: &str) -> impl fmt::Display {
+    "todo"
+}
 
 fn get_npm_bin_dir() -> String {
     let output = Command::new("npm")
@@ -32,6 +76,7 @@ fn main() -> Result<()> {
     install_tracing();
 
     color_eyre::config::HookBuilder::default()
+    .panic_message(MyPanicMessage)
     .panic_section("Please report the bug on github at https://github.com/christopherBiscardi/toast/issues/new with any context you have :)")
     .install()?;
 
