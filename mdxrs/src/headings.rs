@@ -1,10 +1,4 @@
-use nom::{
-    bytes::complete::{self},
-    character::*,
-    sequence::terminated,
-    Err::Error,
-    IResult, *,
-};
+use nom::{character::*, sequence::terminated, Err::Error, IResult, *};
 
 use crate::mdx_error::MDXError;
 

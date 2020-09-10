@@ -1,12 +1,4 @@
-use nom::{
-    bytes::complete::{self, tag, take_while_m_n},
-    character::*,
-    combinator::map_res,
-    error::{ErrorKind, ParseError},
-    sequence::terminated,
-    Err::{Error, Failure, Incomplete},
-    IResult, *,
-};
+use nom::error::{ErrorKind, ParseError};
 
 #[derive(Debug, PartialEq)]
 pub enum MDXError<I> {
