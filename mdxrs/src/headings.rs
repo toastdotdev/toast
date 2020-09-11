@@ -29,7 +29,7 @@ pub fn rest_of_line(input: &str) -> IResult<&str, &str> {
 }
 named!(hashtags, is_a!("#"));
 named!(spaces, take_while!(is_space));
-named!(eof, eof!());
+// named!(eof, eof!());
 
 pub fn atx_heading(input: &[u8]) -> IResult<&[u8], ATXHeading, MDXError<&[u8]>> {
     // TODO: up to 3 spaces can occur here
