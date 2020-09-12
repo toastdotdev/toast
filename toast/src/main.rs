@@ -1,6 +1,9 @@
-use color_eyre::eyre::{Result, WrapErr};
+use async_std;
+use async_std::task;
+use color_eyre::eyre::{eyre, Result, WrapErr};
 use color_eyre::section::PanicMessage;
 use owo_colors::OwoColorize;
+use semver::Version;
 use std::fs;
 use std::process::Command;
 use std::{fmt, panic::Location};
@@ -104,6 +107,42 @@ fn get_npm_bin_dir() -> String {
     }
 }
 
+fn check_node_version() -> Result<()> {
+    let minimum_required_node_major_version = Version {
+        major: 14,
+        minor: 0,
+        patch: 0,
+        pre: vec![],
+        build: vec![],
+    };
+
+    let mut cmd = Command::new("node");
+    cmd.arg("-v");
+    let output = cmd
+        .output()
+        .wrap_err_with(|| "Failed to execute `node -v` Command and collect output")?;
+    let version_string = std::str::from_utf8(&output.stdout)
+        .wrap_err_with(|| "Failed to create utf8 string from node -v Command output")?;
+    let version_string_trimmed = version_string.trim_start_matches("v");
+    let current_node_version_result = Version::parse(version_string_trimmed);
+    match current_node_version_result {
+        Ok(current_node_version) => {
+            if current_node_version < minimum_required_node_major_version {
+                Err(eyre!(format!(
+                    "node version {} doesn't meet the minimum required version {}",
+                    current_node_version, minimum_required_node_major_version
+                )))
+            } else {
+                Ok(())
+            }
+        }
+        Err(_e) => Err(eyre!(format!(
+            "Couldn't parse node version from trimmed version `{}`, original string is `{}`",
+            version_string_trimmed, version_string
+        ))),
+    }
+}
+
 #[instrument]
 fn main() -> Result<()> {
     #[cfg(feature = "capture-spantrace")]
@@ -111,8 +150,9 @@ fn main() -> Result<()> {
 
     color_eyre::config::HookBuilder::default()
         .panic_message(MyPanicMessage)
-        // .panic_section("Please report the bug on github at https://github.com/christopherBiscardi/toast/issues/new with any context you have :)")
         .install()?;
+
+    check_node_version()?;
     // let client = libhoney::init(libhoney::Config {
     //     options: libhoney::client::Options {
     //         api_key: "YOUR_API_KEY".to_string(),
@@ -149,9 +189,9 @@ fn main() -> Result<()> {
                 })?
             };
 
-            incremental_compile(IncrementalOpts {
+            task::block_on(incremental_compile(IncrementalOpts {
                 debug,
-                project_root_dir: input_dir.clone(),
+                project_root_dir: &input_dir,
                 output_dir: match output_dir {
                     Some(v) => v,
                     None => {
@@ -172,7 +212,7 @@ fn main() -> Result<()> {
                 },
                 npm_bin_dir,
                 import_map,
-            })
+            }))
         }
     }
     // println!("{}", result)

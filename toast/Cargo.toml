@@ -29,6 +29,10 @@ swc_ecma_visit = { git = "https://github.com/swc-project/swc" }
 swc_visit = { git = "https://github.com/swc-project/swc" }
 url = "2.1.1"
 sys-info = "0.7.0"
+tide = "0.13.0"
+async-std = "1.6.3"
+futures = "0.3.5"
+semver = "0.10.0"
 
 [dependencies.swc_common]
 git = "https://github.com/swc-project/swc"

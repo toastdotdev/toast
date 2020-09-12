@@ -1,35 +1,51 @@
-use crate::toast::{breadbox::ImportMap, cache::init, node::render_to_html};
+use crate::toast::{
+    breadbox::ImportMap,
+    cache::init,
+    node::{render_to_html, source_data},
+};
+use async_std::task;
 use color_eyre::{
     eyre::{eyre, Report, Result, WrapErr},
     Section,
 };
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
+    fs,
     path::{Path, PathBuf},
+    process,
 };
 use walkdir::WalkDir;
 
-pub struct IncrementalOpts {
+use crate::toast::cache::Cache;
+
+pub struct IncrementalOpts<'a> {
     pub debug: bool,
-    pub project_root_dir: PathBuf,
+    pub project_root_dir: &'a PathBuf,
     pub output_dir: PathBuf,
     pub npm_bin_dir: String,
     pub import_map: ImportMap,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct CreatePage {
+    module: String,
+    slug: String,
+    data: serde_json::Value,
+}
 #[derive(Debug)]
 struct OutputFile {
     dest: String,
 }
 
-pub fn incremental_compile(
+pub async fn incremental_compile(
     IncrementalOpts {
         debug,
         project_root_dir,
         output_dir,
         npm_bin_dir,
         import_map,
-    }: IncrementalOpts,
+    }: IncrementalOpts<'_>,
 ) -> Result<()> {
     let tmp_dir = {
         let mut dir = project_root_dir.clone();
@@ -43,7 +59,73 @@ pub fn incremental_compile(
         )
     })?;
 
+    // node script creation
+    // let child = task::spawn(async {
+    //     println!("child");
+    //     let cmd = Command::new("node").arg("index.js").output();
+    //     io::stdout().write_all(&cmd.unwrap().stdout).unwrap();
+    //     Ok(())
+    // });
     let mut cache = init(npm_bin_dir.clone());
+    // boot server
+    let mut app = tide::new();
+    let sock = format!("http+unix://{}", "/var/tmp/toaster.sock");
+    app.at("/").get(|_| async { Ok("ready") });
+    app.at("/create-page")
+        .post(|mut req: tide::Request<()>| async move {
+            let create_page: CreatePage = req.body_json().await?;
+            println!("{:?}", create_page);
+            Ok("thanks")
+        });
+    app.at("/terminate").get(|_| async {
+        let _result = fs::remove_file("/var/tmp/toaster.sock");
+        process::exit(0);
+        #[allow(unreachable_code)]
+        Ok("done")
+    });
+    let server = task::spawn(app.listen(sock));
+
+    let files_by_source_id = compile_src_files(
+        IncrementalOpts {
+            debug,
+            project_root_dir: &project_root_dir,
+            output_dir: output_dir.clone(),
+            npm_bin_dir: npm_bin_dir.clone(),
+            import_map,
+        },
+        cache,
+        &tmp_dir,
+    )?;
+    // render_src_pages()?;
+    let file_list = files_by_source_id
+        .iter()
+        .map(|(_, output_file)| output_file.dest.clone())
+        .collect::<Vec<String>>();
+    render_to_html(
+        tmp_dir.into_os_string().into_string().unwrap(),
+        output_dir.into_os_string().into_string().unwrap(),
+        file_list,
+        npm_bin_dir,
+    );
+
+    let data_from_user = source_data(&project_root_dir.join("toast.mjs")).await;
+
+    let maybe_gone = server.cancel();
+    let _result = fs::remove_file("/var/tmp/toaster.sock");
+    Ok(())
+}
+
+fn compile_src_files(
+    IncrementalOpts {
+        debug,
+        project_root_dir,
+        output_dir,
+        npm_bin_dir,
+        import_map,
+    }: IncrementalOpts,
+    mut cache: Cache,
+    tmp_dir: &PathBuf,
+) -> Result<HashMap<String, OutputFile>> {
     let files_by_source_id: HashMap<String, OutputFile> =
         WalkDir::new(&project_root_dir.join("src"))
             .into_iter()
@@ -99,16 +181,5 @@ pub fn incremental_compile(
             )
         })?;
     }
-
-    let file_list = files_by_source_id
-        .iter()
-        .map(|(_, output_file)| output_file.dest.clone())
-        .collect::<Vec<String>>();
-    render_to_html(
-        tmp_dir.into_os_string().into_string().unwrap(),
-        output_dir.into_os_string().into_string().unwrap(),
-        file_list,
-        npm_bin_dir,
-    );
-    Ok(())
+    Ok(files_by_source_id)
 }
