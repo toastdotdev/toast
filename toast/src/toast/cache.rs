@@ -1,8 +1,9 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 
 mod salsa_db;
 
-use crate::toast::breadbox::ImportMap;
+use crate::toast::{breadbox::ImportMap, sources::Source};
 use salsa_db::{Files, SalsaToastDatabaseStruct};
 
 pub struct Cache {
@@ -11,9 +12,13 @@ pub struct Cache {
 }
 
 impl Cache {
-    pub fn set_source(&mut self, key: &str, source: Vec<u8>) {
+    pub fn set_source(&mut self, key: &str, source: Source) {
         let db: &mut dyn Files = &mut self.db;
         db.set_source(key.to_string(), Arc::new(source));
+    }
+    pub fn read(&mut self, key: PathBuf) -> String {
+        let db: &mut dyn Files = &mut self.db;
+        db.read(key)
     }
     pub fn get_js_for_browser(&mut self, key: &str, import_map: ImportMap) -> String {
         let db: &mut dyn Files = &mut self.db;

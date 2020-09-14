@@ -2,6 +2,7 @@
   "name": "toastrs",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "bin": {
     "toast": "./toast",
     "toast-render": "./toast-render"

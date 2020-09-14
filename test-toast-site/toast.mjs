@@ -1,9 +1,16 @@
 export const sourceData = async ({ createPage }) => {
-  await createPage({ module: page, slug: "/about", data: {} });
+  // data fetching
+  await createPage({
+    module: page,
+    slug: "/about",
+    data: {},
+    moduleType: "mdx",
+  });
   return;
 };
 
-const page = `/* @jsx mdx */
+const page = `/** @jsx mdx */
+import {mdx} from '@mdx-js/preact';
 
 const layoutProps = {};
 const MDXLayout = "wrapper";

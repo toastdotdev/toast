@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const path = require("path");
-const { existsSync, promises: fs } = require("fs");
-require("./src/module-aliases");
-const { render } = require("./src/page-renderer-pre");
+import path from "path";
+import { existsSync, promises as fs } from "fs";
+import "./src/module-aliases.mjs";
+import { render } from "./src/page-renderer-pre.mjs";
 
 const [node, bin, srcDir, outputDir, ...args] = process.argv;
 
@@ -14,14 +14,13 @@ async function main() {
   let pageWrapper;
   const pageWrapperPath = path.resolve(srcDir, "src/page-wrapper");
   try {
-    pageWrapper = require(pageWrapperPath).default;
+    pageWrapper = await import(pageWrapperPath);
   } catch (e) {
     // console.log("no user pagewrapper supplied");
   }
 
   // TODO: no data for now
   const data = {};
-
   // render html
   return Promise.all(
     args.map(async (file) => {

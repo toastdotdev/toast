@@ -33,6 +33,7 @@ tide = "0.13.0"
 async-std = "1.6.3"
 futures = "0.3.5"
 semver = "0.10.0"
+crossbeam = "0.7.3"
 
 [dependencies.swc_common]
 git = "https://github.com/swc-project/swc"

@@ -1,7 +1,8 @@
-const { render } = require("preact-render-to-string");
-const { h } = require("preact");
-const { Helmet } = require("react-helmet");
+import { render as prender } from "preact-render-to-string";
+import { h } from "preact";
+import H from "react-helmet";
 
+const { Helmet } = H;
 const htmlTemplate = ({
   componentPath,
   pageWrapperPath,
@@ -66,7 +67,7 @@ renderPage();
 
 const windowsLocalDevPathReplacement = /\\/g;
 
-exports.render = async ({
+export const render = async ({
   component,
   pageWrapper,
   data = {},
@@ -79,7 +80,7 @@ exports.render = async ({
     ? pageWrapper
     : ({ children }) => h("div", null, children);
 
-  const output = render(h(pageWrapper, data, h(component, data)));
+  const output = prender(h(pageWrapper, data, h(component, data)));
   //   console.log(output);
   const helmet = Helmet.renderStatic();
   return htmlTemplate({

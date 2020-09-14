@@ -9,5 +9,8 @@
   "workspaces": [
     "toast-node-wrapper",
     "test-toast-site"
-  ]
+  ],
+  "dependencies": {
+    "patch-package": "^6.2.2"
+  }
 }

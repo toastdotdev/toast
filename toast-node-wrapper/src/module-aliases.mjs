@@ -1,7 +1,7 @@
-var moduleAlias = require("module-alias");
+import moduleAlias from "module-alias";
 
 moduleAlias.addAliases({
   react: "preact/compat",
-  "react-dom": "preact/compat"
+  "react-dom": "preact/compat",
   //   'create-react-class': path.resolve(__dirname, './create-preact-class')
 });

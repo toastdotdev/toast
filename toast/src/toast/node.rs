@@ -9,13 +9,16 @@ pub fn render_to_html(
     output_dir: String,
     filepaths: Vec<String>,
     npm_bin_dir: String,
-) {
-    let mut cmd = Command::new(env::current_dir().unwrap().join("toast-render.js"));
+) -> Result<()> {
+    let mut cmd = Command::new(env::current_dir().unwrap().join("toast-render.mjs"));
     cmd.arg(dir_of_input_files).arg(output_dir);
     for arg in filepaths {
         cmd.arg(arg);
     }
-    let output = cmd.output();
+    let output = cmd.output()?;
+    std::io::stdout().write_all(&output.stdout);
+    std::io::stderr().write_all(&output.stderr);
+    Ok(())
 }
 
 pub async fn source_data(toast_js_file: &PathBuf) -> Result<()> {
