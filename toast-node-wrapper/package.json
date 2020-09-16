@@ -1,11 +1,12 @@
 {
   "name": "toastrs",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "index.js",
   "type": "module",
   "bin": {
     "toast": "./toast",
-    "toast-render": "./toast-render"
+    "toast-render": "./toast-render",
+    "toast-source-data": "./toast-source-data"
   },
   "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
   "license": "MIT",

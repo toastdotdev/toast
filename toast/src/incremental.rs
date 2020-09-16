@@ -18,10 +18,12 @@ use std::{
     process,
     sync::{Arc, Mutex},
 };
+use tracing::instrument;
 use walkdir::WalkDir;
 
 use crate::toast::cache::Cache;
 
+#[derive(Debug)]
 pub struct IncrementalOpts<'a> {
     pub debug: bool,
     pub project_root_dir: &'a PathBuf,
@@ -49,6 +51,8 @@ struct TideSharedState {
 enum Event {
     CreatePage(CreatePage),
 }
+
+// #[instrument]
 pub async fn incremental_compile(
     IncrementalOpts {
         debug,
@@ -169,6 +173,7 @@ pub async fn incremental_compile(
     Ok(())
 }
 
+// #[instrument(skip(cache))]
 fn compile_src_files(
     IncrementalOpts {
         debug,
@@ -215,6 +220,8 @@ fn compile_src_files(
                         },
                     },
                 );
+                panic!("at the disco");
+
                 map.entry(String::from(source_id)).or_insert(OutputFile {
                     dest: source_id.to_string(),
                 });
