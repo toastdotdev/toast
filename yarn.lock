@@ -936,10 +936,10 @@
     lodash "^4.17.19"
     to-fast-properties "^2.0.0"
 
-"@mdx-js/preact@^2.0.0-next.7":
-  version "2.0.0-next.7"
-  resolved "https://registry.yarnpkg.com/@mdx-js/preact/-/preact-2.0.0-next.7.tgz#602efc8145a2150a56ab29025ff6b1711801a91f"
-  integrity sha512-7nMHfMXWBhO/1lOcQf8gViQpWfAozgLsSvjokLUhbX429gpZWOw5eK5ntb4av0qa6jg8zb13U7yonZosYmIl+Q==
+"@mdx-js/preact@^1.6.17":
+  version "1.6.17"
+  resolved "https://registry.yarnpkg.com/@mdx-js/preact/-/preact-1.6.17.tgz#90a2d1113759ea2337c084ce3edc168368e8212f"
+  integrity sha512-G6VfALYMffJE4ywciV2uJCXQb3Xw9lf9KbjcJj5kyd0e8DkJ5xjuh3lqWqrNCM3TwAMAu/7D+2Kpdb7vqEz3uA==
 
 "@npmcli/move-file@^1.0.1":
   version "1.0.1"

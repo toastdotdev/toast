@@ -10,7 +10,7 @@
   "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
   "license": "MIT",
   "dependencies": {
-    "@mdx-js/preact": "^2.0.0-next.7",
+    "@mdx-js/preact": "^1.6.17",
     "@svgr/cli": "^5.4.0",
     "got": "^11.6.2",
     "module-alias": "^2.2.2",

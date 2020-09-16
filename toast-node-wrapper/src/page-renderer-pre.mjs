@@ -1,8 +1,7 @@
 import { render as prender } from "preact-render-to-string";
 import { h } from "preact";
-import H from "react-helmet";
+import { Helmet } from "react-helmet";
 
-const { Helmet } = H;
 const htmlTemplate = ({
   componentPath,
   pageWrapperPath,
