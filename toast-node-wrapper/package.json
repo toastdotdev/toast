@@ -1,6 +1,6 @@
 {
   "name": "toastrs",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "main": "index.js",
   "type": "module",
   "bin": {
@@ -10,6 +10,12 @@
   },
   "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
   "license": "MIT",
+  "files": [
+    "toast",
+    "toast-render.mjs",
+    "toast-source-data.mjs",
+    "src"
+  ],
   "dependencies": {
     "@mdx-js/preact": "^1.6.17",
     "@svgr/cli": "^5.4.0",
