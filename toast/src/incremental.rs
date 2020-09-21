@@ -116,8 +116,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .map(|(_, output_file)| output_file.dest.clone())
         .collect::<Vec<String>>();
 
-    let data_from_user =
-        source_data(&project_root_dir.join("toast.mjs"), npm_bin_dir.clone()).await;
+    let data_from_user = source_data(&project_root_dir.join("toast.js"), npm_bin_dir.clone()).await;
 
     let maybe_gone = server.cancel();
     let _result = fs::remove_file("/var/tmp/toaster.sock");
@@ -282,7 +281,7 @@ fn compile_js(
     let js_node = cache.get_js_for_server(source_id);
     let mut node_output_file = tmp_dir.clone();
     node_output_file.push(&output_file.dest);
-    node_output_file.set_extension("mjs");
+    // node_output_file.set_extension("mjs");
     let file_dir = node_output_file.parent().ok_or(eyre!(format!(
         "could not get .parent() directory for `{}`",
         &node_output_file.display()
