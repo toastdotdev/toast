@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --loader toastrs/src/loader.mjs
 
 import got from "got";
 
