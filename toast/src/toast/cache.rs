@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::sync::Arc;
+use tracing::instrument;
 
 mod salsa_db;
 
@@ -8,7 +9,7 @@ use salsa_db::{Files, SalsaToastDatabaseStruct};
 
 pub struct Cache {
     db: SalsaToastDatabaseStruct,
-    npm_bin_dir: String,
+    npm_bin_dir: PathBuf,
 }
 
 impl Cache {
@@ -32,7 +33,8 @@ impl Cache {
     }
 }
 
-pub fn init(npm_bin_dir: String) -> Cache {
+#[instrument]
+pub fn init(npm_bin_dir: PathBuf) -> Cache {
     let mut db = SalsaToastDatabaseStruct::default();
 
     Cache { db, npm_bin_dir }

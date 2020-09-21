@@ -5,11 +5,12 @@ use color_eyre::section::PanicMessage;
 use owo_colors::OwoColorize;
 use semver::Version;
 use std::fs;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::{fmt, panic::Location};
 use structopt::StructOpt;
 use sys_info::{os_release, os_type};
-use tracing::instrument;
+use tracing::{info, instrument, span, Level};
 use url::Url;
 
 mod cli_args;
@@ -23,18 +24,13 @@ use toast::breadbox::parse_import_map;
 const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 #[instrument]
-fn get_npm_bin_dir() -> String {
+fn get_npm_bin_dir() -> Result<PathBuf> {
     let output = Command::new("npm")
         .arg("bin")
         .output()
-        .expect("failed to execute process");
-    match String::from_utf8(output.stdout) {
-        Ok(output_string) => output_string,
-        Err(e) => {
-            println!("utf8 conversion error {}", e);
-            panic!("npm bin location could not be found, exiting")
-        }
-    }
+        .expect("failed to get npm bin dir");
+    let possible_path = std::str::from_utf8(&output.stdout)?;
+    Ok(PathBuf::from(possible_path.trim()))
 }
 
 #[instrument]
@@ -91,6 +87,7 @@ fn main() -> Result<()> {
         .install()?;
 
     check_node_version()?;
+
     // let client = libhoney::init(libhoney::Config {
     //     options: libhoney::client::Options {
     //         api_key: "YOUR_API_KEY".to_string(),
@@ -101,9 +98,9 @@ fn main() -> Result<()> {
     // });
     // event := builder.new_event()
     // event.add_field("key", Value::String("val".to_string())), event.add(data)
-    let npm_bin_dir = get_npm_bin_dir();
+    let npm_bin_dir = get_npm_bin_dir()?;
     let opt = Toast::from_args();
-    // println!("{:?}", opt);
+
     match opt {
         Toast::Incremental {
             debug,
@@ -161,6 +158,7 @@ fn main() -> Result<()> {
 
 #[cfg(feature = "capture-spantrace")]
 fn install_tracing() {
+    println!("capturing spantraces");
     use tracing_error::ErrorLayer;
     use tracing_subscriber::prelude::*;
     use tracing_subscriber::{fmt, EnvFilter};

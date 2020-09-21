@@ -6,6 +6,7 @@
   "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
   "license": "MIT",
   "dependencies": {
-    "@sector/breadbox": "^0.0.4"
+    "@sector/breadbox": "^0.0.4",
+    "toastrs": "*"
   }
 }

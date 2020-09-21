@@ -18,7 +18,7 @@ use std::{
     process,
     sync::{Arc, Mutex},
 };
-use tracing::instrument;
+use tracing::{info, instrument, span, Level};
 use walkdir::WalkDir;
 
 use crate::toast::cache::Cache;
@@ -28,7 +28,7 @@ pub struct IncrementalOpts<'a> {
     pub debug: bool,
     pub project_root_dir: &'a PathBuf,
     pub output_dir: PathBuf,
-    pub npm_bin_dir: String,
+    pub npm_bin_dir: PathBuf,
     pub import_map: ImportMap,
 }
 
@@ -52,16 +52,15 @@ enum Event {
     CreatePage(CreatePage),
 }
 
-// #[instrument]
-pub async fn incremental_compile(
-    IncrementalOpts {
+#[instrument]
+pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
+    let IncrementalOpts {
         debug,
         project_root_dir,
         output_dir,
         npm_bin_dir,
         import_map,
-    }: IncrementalOpts<'_>,
-) -> Result<()> {
+    } = opts;
     let tmp_dir = {
         let mut dir = project_root_dir.clone();
         dir.push(".tmp");
@@ -117,7 +116,8 @@ pub async fn incremental_compile(
         .map(|(_, output_file)| output_file.dest.clone())
         .collect::<Vec<String>>();
 
-    let data_from_user = source_data(&project_root_dir.join("toast.mjs")).await;
+    let data_from_user =
+        source_data(&project_root_dir.join("toast.mjs"), npm_bin_dir.clone()).await;
 
     let maybe_gone = server.cancel();
     let _result = fs::remove_file("/var/tmp/toaster.sock");
@@ -173,18 +173,19 @@ pub async fn incremental_compile(
     Ok(())
 }
 
-// #[instrument(skip(cache))]
+#[instrument(skip(cache))]
 fn compile_src_files(
-    IncrementalOpts {
+    opts: IncrementalOpts,
+    cache: &mut Cache,
+    tmp_dir: &PathBuf,
+) -> Result<HashMap<String, OutputFile>> {
+    let IncrementalOpts {
         debug,
         project_root_dir,
         output_dir,
         npm_bin_dir,
         import_map,
-    }: IncrementalOpts,
-    cache: &mut Cache,
-    tmp_dir: &PathBuf,
-) -> Result<HashMap<String, OutputFile>> {
+    } = opts;
     let files_by_source_id: HashMap<String, OutputFile> =
         WalkDir::new(&project_root_dir.join("src"))
             .into_iter()
@@ -220,14 +221,12 @@ fn compile_src_files(
                         },
                     },
                 );
-                panic!("at the disco");
 
                 map.entry(String::from(source_id)).or_insert(OutputFile {
                     dest: source_id.to_string(),
                 });
                 map
             });
-
     for (source_id, output_file) in files_by_source_id.iter() {
         compile_js(
             source_id,
@@ -246,22 +245,33 @@ fn compile_src_files(
     Ok(files_by_source_id)
 }
 
+#[instrument(skip(cache))]
 fn compile_js(
     source_id: &str,
     output_file: &OutputFile,
-    IncrementalOpts {
+    opts: IncrementalOpts,
+    cache: &mut Cache,
+    tmp_dir: &PathBuf,
+) -> Result<()> {
+    let IncrementalOpts {
         debug,
         project_root_dir,
         output_dir,
         npm_bin_dir,
         import_map,
-    }: IncrementalOpts,
-    cache: &mut Cache,
-    tmp_dir: &PathBuf,
-) -> Result<()> {
+    } = opts;
     let browser_output_file = output_dir.join(Path::new(&output_file.dest));
     let js_browser = cache.get_js_for_browser(source_id, import_map.clone());
-    std::fs::create_dir_all(&browser_output_file.parent().unwrap());
+    let file_dir = browser_output_file.parent().ok_or(eyre!(format!(
+        "could not get .parent() directory for `{}`",
+        &browser_output_file.display()
+    )))?;
+    std::fs::create_dir_all(&file_dir).wrap_err_with(|| {
+        format!(
+            "Failed to create parent directories for `{}`. ",
+            &browser_output_file.display()
+        )
+    })?;
     let _res = std::fs::write(&browser_output_file, js_browser).wrap_err_with(|| {
         format!(
             "Failed to write browser JS file for `{}`. ",
@@ -273,8 +283,16 @@ fn compile_js(
     let mut node_output_file = tmp_dir.clone();
     node_output_file.push(&output_file.dest);
     node_output_file.set_extension("mjs");
-    // TODO: handle directory creation errors gracefully
-    std::fs::create_dir_all(&node_output_file.parent().unwrap());
+    let file_dir = node_output_file.parent().ok_or(eyre!(format!(
+        "could not get .parent() directory for `{}`",
+        &node_output_file.display()
+    )))?;
+    std::fs::create_dir_all(&file_dir).wrap_err_with(|| {
+        format!(
+            "Failed to create parent directories for `{}`. ",
+            &browser_output_file.display()
+        )
+    })?;
     let _node_res = std::fs::write(&node_output_file, js_node).wrap_err_with(|| {
         format!(
             "Failed to write node JS file for `{}`. ",

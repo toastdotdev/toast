@@ -1,12 +1,18 @@
-use color_eyre::Result;
+use color_eyre::{eyre::eyre, Result};
+use std::env;
 use std::path::PathBuf;
-
 use structopt::StructOpt;
+use tracing::instrument;
 
-fn abspath(input_dir: &std::ffi::OsStr) -> Result<PathBuf, std::ffi::OsString> {
+#[instrument]
+fn abspath(input_dir: &str) -> Result<PathBuf> {
     match PathBuf::from(input_dir).canonicalize() {
         Ok(dir) => Ok(dir),
-        Err(_err) => Err(input_dir.into()),
+        Err(_err) => Err(eyre!(
+            "Could not find directory `{}` for input_dir from {}",
+            input_dir,
+            env::current_dir().unwrap().display()
+        )),
     }
 }
 
@@ -20,7 +26,7 @@ pub enum Toast {
         debug: bool,
 
         /// Input file
-        #[structopt(parse(try_from_os_str = abspath))]
+        #[structopt(parse(try_from_str = abspath))]
         input_dir: PathBuf,
 
         /// Output file, stdout if not present

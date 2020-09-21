@@ -1,31 +1,31 @@
+use std::path::PathBuf;
 use std::sync::Arc;
+use tracing::instrument;
 
-// use swc;
 use swc::{
     self,
     config::{Config, JscConfig, JscTarget, Options, SourceMapsConfig, TransformConfig},
 };
 /*FoldWith,  VisitMut */
-use swc_ecma_visit::{Fold, FoldWith};
-
 use swc_common::{
     chain,
     errors::{ColorConfig, Handler},
     FileName, SourceMap,
 };
-// use swc_ecma_ast::Program;
 use swc_ecma_parser::{EsConfig, Syntax};
 use swc_ecma_transforms::react;
+use swc_ecma_visit::{Fold, FoldWith};
 
 use crate::toast::{
     breadbox::ImportMap, cache::init, svg::SVGImportToComponent,
     swc_import_map_rewrite::SWCImportMapRewrite,
 };
 
+#[instrument]
 pub fn compile_js_for_browser(
     source: String,
     filename: String,
-    npm_bin_dir: String,
+    npm_bin_dir: PathBuf,
     import_map: ImportMap,
 ) -> String {
     let opts = &get_opts();
@@ -71,7 +71,9 @@ pub fn compile_js_for_browser(
     let output = compiler.print(&result, SourceMapsConfig::default(), None, false);
     return output.unwrap().code;
 }
-pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: String) -> String {
+
+#[instrument]
+pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: PathBuf) -> String {
     let opts = &get_opts();
 
     let cm = Arc::<SourceMap>::default();
@@ -113,6 +115,7 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Stri
     return output.unwrap().code;
 }
 
+#[instrument]
 fn get_opts() -> Options {
     return Options {
         is_module: true,
@@ -141,6 +144,7 @@ fn get_opts() -> Options {
     };
 }
 
+#[instrument]
 fn get_syntax() -> Syntax {
     Syntax::Es(EsConfig {
         jsx: true,

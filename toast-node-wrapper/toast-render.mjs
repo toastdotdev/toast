@@ -1,4 +1,4 @@
-#!/usr/bin/env node --loader ./src/loader.mjs
+#!/usr/bin/env node --loader toastrs/src/loader.mjs
 
 import path from "path";
 import { existsSync, promises as fs } from "fs";
