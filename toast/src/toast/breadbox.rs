@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Result;
 use std::collections::BTreeMap;
-use string_cache::{Atom, EmptyStaticAtomSet};
+use string_cache::Atom;
 
 #[derive(Serialize, Deserialize, Eq, PartialEq, Debug, Hash, Clone)]
 pub struct ImportMap {

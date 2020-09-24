@@ -6,7 +6,6 @@ use swc::{
     self,
     config::{Config, JscConfig, JscTarget, Options, SourceMapsConfig, TransformConfig},
 };
-/*FoldWith,  VisitMut */
 use swc_common::{
     chain,
     errors::{ColorConfig, Handler},
@@ -17,8 +16,7 @@ use swc_ecma_transforms::react;
 use swc_ecma_visit::{Fold, FoldWith};
 
 use crate::toast::{
-    breadbox::ImportMap, cache::init, svg::SVGImportToComponent,
-    swc_import_map_rewrite::SWCImportMapRewrite,
+    breadbox::ImportMap, svg::SVGImportToComponent, swc_import_map_rewrite::SWCImportMapRewrite,
 };
 
 #[instrument]
@@ -121,6 +119,7 @@ fn get_opts() -> Options {
         is_module: true,
         config: Some(Config {
             jsc: JscConfig {
+                target: JscTarget::Es2020,
                 syntax: Some(Syntax::Es(EsConfig {
                     jsx: true,
                     nullish_coalescing: true,
@@ -130,7 +129,7 @@ fn get_opts() -> Options {
                 })),
                 transform: Some(TransformConfig {
                     react: react::Options {
-                        pragma: "Preact.t".to_string(),
+                        pragma: "Preact.h".to_string(),
                         pragma_frag: "Preact.Fragment".to_string(),
                         ..Default::default()
                     },

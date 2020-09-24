@@ -5,20 +5,16 @@ use crate::toast::{
     sources::{Source, SourceKind},
 };
 use async_std::task;
-use color_eyre::{
-    eyre::{eyre, Report, Result, WrapErr},
-    Section,
-};
-use crossbeam::{unbounded, Receiver, Sender};
+use color_eyre::eyre::{eyre, Result, WrapErr};
+use crossbeam::{unbounded, Sender};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
     process,
-    sync::{Arc, Mutex},
 };
-use tracing::{info, instrument, span, Level};
+use tracing::instrument;
 use walkdir::WalkDir;
 
 use crate::toast::cache::Cache;
@@ -116,9 +112,10 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .map(|(_, output_file)| output_file.dest.clone())
         .collect::<Vec<String>>();
 
-    let data_from_user = source_data(&project_root_dir.join("toast.js"), npm_bin_dir.clone()).await;
+    let _data_from_user =
+        source_data(&project_root_dir.join("toast.js"), npm_bin_dir.clone()).await;
 
-    let maybe_gone = server.cancel();
+    let _maybe_gone = server.cancel();
     let _result = fs::remove_file("/var/tmp/toaster.sock");
 
     let v: Vec<Event> = rx.try_iter().collect();
@@ -160,7 +157,6 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .iter()
         .map(|Event::CreatePage(CreatePage { slug, .. })| format!("{}.js", slug.trim_matches('/')))
         .collect();
-    // vec![].file_list.append(remote_file_list)
     let mut list = file_list.clone();
     list.extend(remote_file_list);
     render_to_html(

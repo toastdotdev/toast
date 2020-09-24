@@ -1,9 +1,8 @@
 use color_eyre::eyre::Result;
-use std::env;
-use std::io::{self, Write};
-use std::path::{Path, PathBuf};
+use std::io::Write;
+use std::path::PathBuf;
 use std::process::Command;
-use tracing::{info, instrument};
+use tracing::instrument;
 
 #[instrument]
 pub fn render_to_html(

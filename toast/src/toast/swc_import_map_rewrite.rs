@@ -1,5 +1,5 @@
 use crate::toast::breadbox::ImportMap;
-use string_cache::{Atom, EmptyStaticAtomSet};
+// use string_cache::Atom;
 use swc_ecma_ast::{ImportDecl, Str};
 use swc_ecma_visit::{noop_fold_type, Fold};
 
@@ -7,9 +7,9 @@ pub struct SWCImportMapRewrite<'a> {
     pub import_map: &'a ImportMap,
 }
 
-fn is_source_import(val: Atom<swc_atoms::JsWordStaticSet>) -> bool {
-    val.starts_with("/") || val.starts_with(".") || val.starts_with("\\")
-}
+// fn is_source_import(val: Atom<swc_atoms::JsWordStaticSet>) -> bool {
+//     val.starts_with("/") || val.starts_with(".") || val.starts_with("\\")
+// }
 
 impl Fold for SWCImportMapRewrite<'_> {
     noop_fold_type!();
@@ -24,14 +24,6 @@ impl Fold for SWCImportMapRewrite<'_> {
                         .get(&decl.src.value)
                         .unwrap()
                         .clone(),
-                    ..decl.src
-                },
-                ..decl
-            }
-        } else if is_source_import(decl.src.value.clone()) {
-            ImportDecl {
-                src: Str {
-                    value: Atom::from(format!("{}{}", decl.src.value, ".js")),
                     ..decl.src
                 },
                 ..decl

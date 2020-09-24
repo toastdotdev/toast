@@ -1,17 +1,13 @@
 use async_std;
 use async_std::task;
 use color_eyre::eyre::{eyre, Result, WrapErr};
-use color_eyre::section::PanicMessage;
-use owo_colors::OwoColorize;
 use semver::Version;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
-use std::{fmt, panic::Location};
 use structopt::StructOpt;
 use sys_info::{os_release, os_type};
-use tracing::{info, instrument, span, Level};
-use url::Url;
+use tracing::instrument;
 
 mod cli_args;
 mod incremental;
