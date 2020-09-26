@@ -21,7 +21,8 @@ const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 #[instrument]
 fn get_npm_bin_dir() -> Result<PathBuf> {
-    let output = Command::new("npm")
+    let npm_path = which::which("npm").expect("failed to get npm path");
+    let output = Command::new(npm_path)
         .arg("bin")
         .output()
         .expect("failed to get npm bin dir");
