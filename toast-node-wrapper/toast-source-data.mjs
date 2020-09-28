@@ -1,8 +1,7 @@
-#!/usr/bin/env node --loader toastrs/src/loader.mjs
-
 import got from "got";
 
-const [_node, _bin, socketPath, toastFilePath, ...args] = process.argv;
+// --loader doesn't show up in argv
+const [_node, _binPath, socketPath, toastFilePath, ...args] = process.argv;
 
 main();
 

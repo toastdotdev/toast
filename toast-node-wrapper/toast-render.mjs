@@ -1,11 +1,10 @@
-#!/usr/bin/env node --loader toastrs/src/loader.mjs
-
 import path from "path";
 import { existsSync, promises as fs } from "fs";
 import "./src/module-aliases.mjs";
 import { render } from "./src/page-renderer-pre.mjs";
 
-const [node, bin, srcDir, outputDir, ...args] = process.argv;
+// loader doesn't show up in argv
+const [_node, _binStr, srcDir, outputDir, ...args] = process.argv;
 
 main();
 
@@ -15,7 +14,7 @@ async function main() {
   const pageWrapperPath = path.resolve(srcDir, "src/page-wrapper.js");
   try {
     wrapper = await import(pageWrapperPath);
-    pageWrapper = wrapper;
+    pageWrapper = wrapper.default;
   } catch (e) {
     console.log("no user pagewrapper supplied");
   }

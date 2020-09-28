@@ -4,7 +4,7 @@ name: Quickstart
 
 jobs:
   check:
-    name: Check
+    name: cargo check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -23,7 +23,7 @@ jobs:
           command: check
 
   test:
-    name: Test Suite
+    name: cargo test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -42,7 +42,7 @@ jobs:
           command: test
 
   lints:
-    name: Lints
+    name: cargo fmt and cargo clippy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources

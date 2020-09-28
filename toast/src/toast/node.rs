@@ -1,4 +1,4 @@
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{eyre, Result};
 use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
@@ -12,8 +12,17 @@ pub fn render_to_html(
     npm_bin_dir: PathBuf,
 ) -> Result<()> {
     let bin = npm_bin_dir.join("toast-render");
-    let mut cmd = Command::new(bin);
-    cmd.arg(dir_of_input_files).arg(output_dir);
+    let mut cmd = Command::new("node");
+    let bin_str = bin
+        .to_str()
+        .ok_or(eyre!("failed to make npm bin into str"))?;
+    cmd.args(&[
+        "--loader",
+        "toastrs/src/loader.mjs",
+        bin_str,
+        &dir_of_input_files,
+        &output_dir,
+    ]);
     for arg in filepaths {
         cmd.arg(arg);
     }
@@ -29,8 +38,20 @@ pub async fn source_data(toast_js_file: &PathBuf, npm_bin_dir: PathBuf) -> Resul
     // goes to look for it: just a sanity check to not
     // execute Command if we don't need to
     if toast_js_file.exists() {
-        let mut cmd = Command::new(npm_bin_dir.join("toast-source-data"));
-        cmd.arg("/var/tmp/toaster.sock").arg(toast_js_file);
+        let bin = npm_bin_dir.join("toast-source-data");
+        let mut cmd = Command::new("node");
+        let bin_str = bin
+            .to_str()
+            .ok_or(eyre!("failed to make npm bin into str"))?;
+        cmd.args(&[
+            "--loader",
+            "toastrs/src/loader.mjs",
+            bin_str,
+            "/var/tmp/toaster.sock",
+            &toast_js_file
+                .to_str()
+                .ok_or(eyre!("failed to make toast_js_file into str"))?,
+        ]);
         let output = cmd.output()?;
         // TODO: move stdout/stderr around so it's not just dumping to console
         std::io::stdout().write_all(&output.stdout);
