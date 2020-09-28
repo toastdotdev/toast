@@ -2820,6 +2820,7 @@ dependencies = [
  "tracing-subscriber",
  "url",
  "walkdir",
+ "which",
 ]
 
 [[package]]
@@ -3111,6 +3112,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6fd319e971980166b53e17b1026812ad66c6b54063be879eb182342b55284694"
 dependencies = [
  "cc",
+]
+
+[[package]]
+name = "which"
+version = "4.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "87c14ef7e1b8b8ecfc75d5eca37949410046e66f15d185c01d70824f1f8111ef"
+dependencies = [
+ "libc",
+ "thiserror",
 ]
 
 [[package]]
