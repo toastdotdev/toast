@@ -12,11 +12,12 @@ main();
 async function main() {
   // require pageWrapper
   let pageWrapper;
-  const pageWrapperPath = path.resolve(srcDir, "src/page-wrapper");
+  const pageWrapperPath = path.resolve(srcDir, "src/page-wrapper.js");
   try {
-    pageWrapper = await import(pageWrapperPath);
+    wrapper = await import(pageWrapperPath);
+    pageWrapper = wrapper;
   } catch (e) {
-    // console.log("no user pagewrapper supplied");
+    console.log("no user pagewrapper supplied");
   }
 
   // TODO: no data for now
@@ -24,10 +25,7 @@ async function main() {
   // render html
   return Promise.all(
     args.map(async (file) => {
-      const nodeComponent = await import(
-        path.resolve(srcDir, file).replace(".js", ".mjs")
-      );
-      //   console.log(nodeComponent);
+      const nodeComponent = await import(path.resolve(srcDir, file));
       return render({
         component: nodeComponent.default,
         pageWrapper,

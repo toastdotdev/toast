@@ -129,8 +129,9 @@ fn get_opts() -> Options {
                 })),
                 transform: Some(TransformConfig {
                     react: react::Options {
-                        pragma: "Preact.h".to_string(),
-                        pragma_frag: "Preact.Fragment".to_string(),
+                        pragma: "h".to_string(),
+                        pragma_frag: "Fragment".to_string(),
+                        use_builtins: true,
                         ..Default::default()
                     },
                     ..Default::default()

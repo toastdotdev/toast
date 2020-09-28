@@ -111,7 +111,6 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .iter()
         .map(|(_, output_file)| output_file.dest.clone())
         .collect::<Vec<String>>();
-
     let _data_from_user =
         source_data(&project_root_dir.join("toast.js"), npm_bin_dir.clone()).await;
 
@@ -157,7 +156,12 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .iter()
         .map(|Event::CreatePage(CreatePage { slug, .. })| format!("{}.js", slug.trim_matches('/')))
         .collect();
-    let mut list = file_list.clone();
+    let mut list: Vec<String> = file_list
+        .clone()
+        .iter()
+        .filter(|f| f.starts_with("src/pages"))
+        .map(|f| f.clone())
+        .collect();
     list.extend(remote_file_list);
     render_to_html(
         tmp_dir.into_os_string().into_string().unwrap(),
