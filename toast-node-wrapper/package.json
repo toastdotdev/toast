@@ -1,6 +1,6 @@
 {
   "name": "toastrs",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "main": "index.js",
   "type": "module",
   "bin": {
@@ -10,9 +10,7 @@
   },
   "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
   "license": "MIT",
-  "scripts": {
-    "postinstall": "postinstall.js"
-  },
+  "scripts": {},
   "files": [
     "toast",
     "toast-render.mjs",
