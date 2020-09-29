@@ -6,7 +6,7 @@ use tracing::instrument;
 
 #[instrument]
 fn abspath(input_dir: &str) -> Result<PathBuf> {
-    match PathBuf::from(input_dir).canonicalize() {
+    match dunce::canonicalize(input_dir) {
         Ok(dir) => Ok(dir),
         Err(_err) => Err(eyre!(
             "Could not find directory `{}` for input_dir from {}",

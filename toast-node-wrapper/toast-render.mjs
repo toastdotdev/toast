@@ -11,7 +11,15 @@ main();
 async function main() {
   // require pageWrapper
   let pageWrapper;
-  const pageWrapperPath = path.resolve(srcDir, "src/page-wrapper.js");
+  const pageWrapperPath =
+    "./" +
+    path.posix.join(
+      ...path
+        .relative(path.dirname(fileURLToPath(import.meta.url)), srcDir)
+        .split(path.sep),
+      "src",
+      "page-wrapper.js"
+    );
   try {
     wrapper = await import(pageWrapperPath);
     pageWrapper = wrapper.default;
