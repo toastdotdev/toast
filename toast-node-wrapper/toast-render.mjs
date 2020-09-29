@@ -24,7 +24,7 @@ async function main() {
     wrapper = await import(pageWrapperPath);
     pageWrapper = wrapper.default;
   } catch (e) {
-    console.log("no user pagewrapper supplied");
+    console.error("no user pagewrapper supplied/n", e);
   }
 
   // TODO: no data for now
