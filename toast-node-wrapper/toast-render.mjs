@@ -1,5 +1,6 @@
 import path from "path";
-import { existsSync, promises as fs } from "fs";
+import { fileURLToPath } from "url";
+import { promises as fs } from "fs";
 import "./src/module-aliases.mjs";
 import { render } from "./src/page-renderer-pre.mjs";
 
