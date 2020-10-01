@@ -11,6 +11,10 @@ main();
 async function main() {
   // require pageWrapper
   let pageWrapper;
+  // Imports are expected to be in posix. We receive a full path here through
+  // the import.meta.url, use the srcDir and convert it to posix.
+  // It also can't import if it begins with a drive letter on Windows, so
+  // we find the relative path from this file to the srcDir.
   const pageWrapperPath =
     "./" +
     path.posix.join(
