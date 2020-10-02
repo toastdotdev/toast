@@ -26,18 +26,25 @@ async function main() {
       "page-wrapper.js"
     );
   try {
-    wrapper = await import(pageWrapperPath);
+    const wrapper = await import(pageWrapperPath);
     pageWrapper = wrapper.default;
   } catch (e) {
     console.error("no user pagewrapper supplied/n", e);
   }
 
-  // TODO: no data for now
-  const data = {};
   // render html
   return Promise.all(
     args.map(async (file) => {
       const nodeComponent = await import(path.resolve(srcDir, file));
+      let data;
+      try {
+        data = await fs.readFile(
+          `${path.resolve(outputDir, file.replace("src/pages/", ""))}on`
+        );
+        data = JSON.parse(data);
+      } catch (e) {
+        // TODO: figure out what errors are important here
+      }
       return render({
         component: nodeComponent.default,
         pageWrapper,
@@ -45,7 +52,10 @@ async function main() {
         browserPageWrapperPath: "/src/page-wrapper.js",
         browserComponentPath: path.resolve("/", file),
         // .js(on)
-        browserDataPath: path.resolve("/", `${file}on`),
+        browserDataPath: path.resolve(
+          "/",
+          `${file.replace("src/pages/", "")}on`
+        ),
       }).then((html) => {
         // write HTML file out for page
         const htmlFilePath = path.resolve(

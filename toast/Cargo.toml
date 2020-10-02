@@ -41,6 +41,8 @@ tracing-subscriber = "0.2.12"
 tracing-futures = "0.2.4"
 tracing-attributes = "0.1.11"
 which = "4.0.2"
+fs_extra = "1.2.0"
+indicatif = "0.15.0"
 dunce = "1.0.1"
 
 [dependencies.tracing]

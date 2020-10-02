@@ -20,6 +20,7 @@ pub fn render_to_html(
         .to_str()
         .ok_or(eyre!("failed to make npm bin into str"))?;
     cmd.args(&[
+        "--no-warnings",
         "--loader",
         "toastrs/src/loader.mjs",
         bin_str,
@@ -50,6 +51,7 @@ pub async fn source_data(toast_js_file: &PathBuf, npm_bin_dir: PathBuf) -> Resul
             .to_str()
             .ok_or(eyre!("failed to make npm bin into str"))?;
         cmd.args(&[
+            "--no-warnings",
             "--loader",
             "toastrs/src/loader.mjs",
             bin_str,

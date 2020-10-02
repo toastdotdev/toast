@@ -4,7 +4,10 @@ use tracing::instrument;
 
 use swc::{
     self,
-    config::{Config, JscConfig, JscTarget, Options, SourceMapsConfig, TransformConfig},
+    config::{
+        Config, GlobalPassOption, JscConfig, JscTarget, OptimizerConfig, Options, SourceMapsConfig,
+        TransformConfig,
+    },
 };
 use swc_common::{
     chain,
@@ -134,6 +137,13 @@ fn get_opts() -> Options {
                         use_builtins: true,
                         ..Default::default()
                     },
+                    optimizer: Some(OptimizerConfig {
+                        globals: Some(GlobalPassOption {
+                            envs: std::env::vars().map(|(k, _)| k).collect(),
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    }),
                     ..Default::default()
                 }),
                 ..Default::default()

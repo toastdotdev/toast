@@ -7,7 +7,10 @@ use crate::toast::{
 use async_std::task;
 use color_eyre::eyre::{eyre, Result, WrapErr};
 use crossbeam::{unbounded, Sender};
+use fs_extra::dir::{copy, CopyOptions};
+use indicatif::{ProgressBar, ProgressStyle};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use std::{
     collections::HashMap,
     fs,
@@ -34,6 +37,12 @@ struct CreatePage {
     slug: String,
     data: serde_json::Value,
 }
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct SetData {
+    slug: String,
+    data: serde_json::Value,
+}
+
 #[derive(Debug)]
 struct OutputFile {
     dest: String,
@@ -42,6 +51,8 @@ struct OutputFile {
 #[derive(Clone)]
 struct TideSharedState {
     tx: Sender<Event>,
+    output_dir: PathBuf,
+    create_page_progress_bar: Arc<ProgressBar>,
 }
 #[derive(Debug, Clone)]
 enum Event {
@@ -69,23 +80,59 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         )
     })?;
 
+    let pb = Arc::new(ProgressBar::new_spinner());
+    pb.enable_steady_tick(120);
+    pb.set_style(
+        ProgressStyle::default_spinner()
+            // For more spinners check out the cli-spinners project:
+            // https://github.com/sindresorhus/cli-spinners/blob/master/spinners.json
+            .tick_strings(&["▹▹▹", "▸▹▹", "▹▸▹", "▹▹▸", "▪▪▪"])
+            .template("{spinner:.blue} [{elapsed}] {pos} {wide_msg}"),
+    );
+    pb.set_message("fetching data...");
+    pb.tick();
     // channel to listen for createPage events
     let (tx, rx) = unbounded();
     // create incremental cache db
     let mut cache = init(npm_bin_dir.clone());
 
     // boot server
-    let mut app = tide::with_state(TideSharedState { tx });
+    let mut app = tide::with_state(TideSharedState {
+        tx,
+        output_dir: output_dir.clone(),
+        create_page_progress_bar: pb.clone(),
+    });
     let sock = format!("http+unix://{}", "/var/tmp/toaster.sock");
     app.at("/").get(|_| async { Ok("ready") });
     app.at("/create-page")
         .post(|mut req: tide::Request<TideSharedState>| async move {
             let create_page: CreatePage = req.body_json().await?;
+            req.state()
+                .create_page_progress_bar
+                .set_message(&format!("{}", create_page.slug));
+            req.state().create_page_progress_bar.inc(1);
+
             &req.state()
                 .tx
                 .send(Event::CreatePage(create_page.clone()))?;
             // println!("{:?}", create_page);
-            Ok("thanks")
+            Ok("ok")
+        });
+    app.at("/set-data")
+        .post(|mut req: tide::Request<TideSharedState>| async move {
+            let mut set_data: SetData = req.body_json().await?;
+            if set_data.slug.ends_with('/') {
+                set_data.slug = format!("{}index", set_data.slug);
+            }
+            let mut json_path = req
+                .state()
+                .output_dir
+                .join(set_data.slug.trim_start_matches('/'));
+            json_path.set_extension("json");
+            async_std::fs::create_dir_all(&json_path.parent().unwrap()).await?;
+            async_std::fs::write(json_path, set_data.data.to_string()).await?;
+            // &req.state().tx.send(Event::SetData(set_data))?;
+            Ok("ok")
         });
     app.at("/terminate").get(|_| async {
         let _result = fs::remove_file("/var/tmp/toaster.sock");
@@ -116,6 +163,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
 
     let _maybe_gone = server.cancel();
     let _result = fs::remove_file("/var/tmp/toaster.sock");
+    pb.abandon_with_message("pages created");
 
     let v: Vec<Event> = rx.try_iter().collect();
     for x in v.clone() {
@@ -128,12 +176,30 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
                         kind: SourceKind::Raw,
                     },
                 );
+                let mut json_path = output_dir.join(slug);
+                json_path.set_extension("json");
+                std::fs::create_dir_all(&json_path.parent().unwrap())?;
+                fs::write(json_path, data.to_string())?
             }
         };
     }
+
+    let pb2 = Arc::new(ProgressBar::new_spinner());
+    pb2.enable_steady_tick(120);
+    pb2.set_style(
+        ProgressStyle::default_spinner()
+            // For more spinners check out the cli-spinners project:
+            // https://github.com/sindresorhus/cli-spinners/blob/master/spinners.json
+            .tick_strings(&["▹▹▹", "▸▹▹", "▹▸▹", "▹▹▸", "▪▪▪"])
+            .template("{spinner:.blue} [{elapsed}] {pos}/{len} {wide_msg}"),
+    );
+    pb2.set_message("compiling...");
+    pb2.tick();
     for x in v.clone() {
         match x {
             Event::CreatePage(CreatePage { module, data, slug }) => {
+                pb2.inc(1);
+                pb2.set_message(&format!("{}", slug));
                 compile_js(
                     &slug,
                     &OutputFile {
@@ -152,6 +218,8 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
             }
         }
     }
+    pb2.abandon_with_message("sources compiled");
+
     let remote_file_list: Vec<String> = v
         .iter()
         .map(|Event::CreatePage(CreatePage { slug, .. })| format!("{}.js", slug.trim_matches('/')))
@@ -163,12 +231,41 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .map(|f| f.clone())
         .collect();
     list.extend(remote_file_list);
+
+    let pb3 = Arc::new(ProgressBar::new_spinner());
+    pb3.enable_steady_tick(120);
+    pb3.set_style(
+        ProgressStyle::default_spinner()
+            // For more spinners check out the cli-spinners project:
+            // https://github.com/sindresorhus/cli-spinners/blob/master/spinners.json
+            .tick_strings(&["▹▹▹", "▸▹▹", "▹▸▹", "▹▹▸", "▪▪▪"])
+            .template("{spinner:.blue} [{elapsed}] {wide_msg}"),
+    );
+    pb3.set_message("rendering html...");
+    pb3.tick();
     render_to_html(
         tmp_dir.into_os_string().into_string().unwrap(),
         output_dir.into_os_string().into_string().unwrap(),
         list,
         npm_bin_dir,
     )?;
+    pb3.abandon_with_message("html rendered");
+
+    // # copy static dir to public dir
+    //
+    // * copy_inside seems to be for copying the whole `static` folder to
+    //   `public/static`.
+    // * `content_only` seems to be for copying `static/*` into `public/`
+    let options = CopyOptions {
+        copy_inside: false,
+        overwrite: true,
+        content_only: true,
+        ..CopyOptions::new()
+    };
+    let static_dir = project_root_dir.join("static");
+    let public_dir = project_root_dir.join("public");
+    copy(static_dir, public_dir, &options)?;
+
     Ok(())
 }
 

@@ -74,6 +74,12 @@ export const render = async ({
   browserPageWrapperPath,
   browserDataPath,
 }) => {
+  console.log(
+    data,
+    Object.keys(data).length > 0
+      ? browserDataPath.replace(windowsLocalDevPathReplacement, "/")
+      : undefined
+  );
   browserPageWrapperPath = pageWrapper ? browserPageWrapperPath : undefined;
   pageWrapper = pageWrapper
     ? pageWrapper
