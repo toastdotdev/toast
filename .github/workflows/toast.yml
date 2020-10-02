@@ -27,7 +27,7 @@ jobs:
       matrix:
         os: [ubuntu-18.04, macos-latest, windows-latest]
     name: cargo test
-    runs-on: { matrix.os }
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
