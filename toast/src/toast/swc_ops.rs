@@ -10,17 +10,16 @@ use swc::{
     },
 };
 use swc_common::{
-    chain,
+    // chain,
     errors::{ColorConfig, Handler},
-    FileName, SourceMap,
+    FileName,
+    SourceMap,
 };
 use swc_ecma_parser::{EsConfig, Syntax};
 use swc_ecma_transforms::react;
-use swc_ecma_visit::{Fold, FoldWith};
+use swc_ecma_visit::FoldWith;
 
-use crate::toast::{
-    breadbox::ImportMap, svg::SVGImportToComponent, swc_import_map_rewrite::SWCImportMapRewrite,
-};
+use crate::toast::{breadbox::ImportMap, swc_import_map_rewrite::SWCImportMapRewrite};
 
 #[instrument]
 pub fn compile_js_for_browser(

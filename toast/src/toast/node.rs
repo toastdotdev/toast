@@ -28,8 +28,8 @@ pub fn render_to_html(
         cmd.arg(arg);
     }
     let output = cmd.output()?;
-    std::io::stdout().write_all(&output.stdout);
-    std::io::stderr().write_all(&output.stderr);
+    let _ = std::io::stdout().write_all(&output.stdout);
+    let _ = std::io::stderr().write_all(&output.stderr);
     Ok(())
 }
 
@@ -56,8 +56,8 @@ pub async fn source_data(toast_js_file: &PathBuf, npm_bin_dir: PathBuf) -> Resul
         ]);
         let output = cmd.output()?;
         // TODO: move stdout/stderr around so it's not just dumping to console
-        std::io::stdout().write_all(&output.stdout);
-        std::io::stderr().write_all(&output.stderr);
+        let _ = std::io::stdout().write_all(&output.stdout);
+        let _ = std::io::stderr().write_all(&output.stderr);
         Ok(())
     } else {
         Ok(())

@@ -35,7 +35,7 @@ impl Cache {
 
 #[instrument]
 pub fn init(npm_bin_dir: PathBuf) -> Cache {
-    let mut db = SalsaToastDatabaseStruct::default();
+    let db = SalsaToastDatabaseStruct::default();
 
     Cache { db, npm_bin_dir }
 }

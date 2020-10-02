@@ -197,7 +197,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     pb2.tick();
     for x in v.clone() {
         match x {
-            Event::CreatePage(CreatePage { module, data, slug }) => {
+            Event::CreatePage(CreatePage { slug, .. }) => {
                 pb2.inc(1);
                 pb2.set_message(&format!("{}", slug));
                 compile_js(
@@ -350,10 +350,10 @@ fn compile_js(
     tmp_dir: &PathBuf,
 ) -> Result<()> {
     let IncrementalOpts {
-        debug,
-        project_root_dir,
+        debug: _,
+        project_root_dir: _,
         output_dir,
-        npm_bin_dir,
+        npm_bin_dir: _,
         import_map,
     } = opts;
     let browser_output_file = output_dir.join(Path::new(&output_file.dest));
