@@ -1,4 +1,3 @@
-use async_std;
 use async_std::task;
 use color_eyre::eyre::{eyre, Result, WrapErr};
 use semver::Version;
@@ -17,7 +16,7 @@ use cli_args::Toast;
 use incremental::{incremental_compile, IncrementalOpts};
 use toast::breadbox::parse_import_map;
 
-const VERSION: &'static str = env!("CARGO_PKG_VERSION");
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[instrument]
 fn get_npm_bin_dir() -> Result<PathBuf> {
@@ -47,7 +46,7 @@ fn check_node_version() -> Result<()> {
         .wrap_err_with(|| "Failed to execute `node -v` Command and collect output")?;
     let version_string = std::str::from_utf8(&output.stdout)
         .wrap_err_with(|| "Failed to create utf8 string from node -v Command output")?;
-    let version_string_trimmed = version_string.trim_start_matches("v");
+    let version_string_trimmed = version_string.trim_start_matches('v');
     let current_node_version_result = Version::parse(version_string_trimmed);
     match current_node_version_result {
         Ok(current_node_version) => {
@@ -76,10 +75,13 @@ fn main() -> Result<()> {
         // .panic_message(MyPanicMessage)
         .issue_url("https://github.com/christopherBiscardi/toast/issues/new")
         .add_issue_metadata("version", VERSION)
-        .add_issue_metadata("os_type", os_type().unwrap_or("unavailable".to_string()))
+        .add_issue_metadata(
+            "os_type",
+            os_type().unwrap_or_else(|_| "unavailable".to_string()),
+        )
         .add_issue_metadata(
             "os_release",
-            os_release().unwrap_or("unavailable".to_string()),
+            os_release().unwrap_or_else(|_| "unavailable".to_string()),
         )
         .install()?;
 
@@ -139,10 +141,7 @@ fn main() -> Result<()> {
                         })?;
                         full_output_dir
                             .canonicalize()
-                            .wrap_err_with(|| {
-                                format!("Failed canonicalize the output directory path")
-                            })?
-                            .to_path_buf()
+                            .wrap_err_with(|| "Failed canonicalize the output directory path")?
                     }
                 },
                 npm_bin_dir,

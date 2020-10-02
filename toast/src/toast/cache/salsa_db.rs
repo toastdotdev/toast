@@ -45,13 +45,13 @@ fn js_for_browser(
     import_map: ImportMap,
 ) -> String {
     let source_file = db.source(key.to_string());
-    return compile_js_for_browser(source_file.source.clone(), key, npm_bin_dir, import_map);
+    compile_js_for_browser(source_file.source.clone(), key, npm_bin_dir, import_map)
 }
 
 #[instrument(skip(db))]
 fn js_for_server(db: &dyn Files, key: String, npm_bin_dir: PathBuf) -> String {
     let source_file = db.source(key.to_string());
-    return compile_js_for_server(source_file.source.clone(), key, npm_bin_dir);
+    compile_js_for_server(source_file.source.clone(), key, npm_bin_dir)
 }
 
 #[salsa::database(FilesStorage)]

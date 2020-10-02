@@ -109,12 +109,10 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
             let create_page: CreatePage = req.body_json().await?;
             req.state()
                 .create_page_progress_bar
-                .set_message(&format!("{}", create_page.slug));
+                .set_message(create_page.slug.as_str());
             req.state().create_page_progress_bar.inc(1);
 
-            &req.state()
-                .tx
-                .send(Event::CreatePage(create_page.clone()))?;
+            req.state().tx.send(Event::CreatePage(create_page))?;
             // println!("{:?}", create_page);
             Ok("ok")
         });
@@ -169,7 +167,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     for x in v.clone() {
         match x {
             Event::CreatePage(CreatePage { module, data, slug }) => {
-                &cache.set_source(
+                cache.set_source(
                     &slug,
                     Source {
                         source: module,
@@ -199,7 +197,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         match x {
             Event::CreatePage(CreatePage { slug, .. }) => {
                 pb2.inc(1);
-                pb2.set_message(&format!("{}", slug));
+                pb2.set_message(slug.as_str());
                 compile_js(
                     &slug,
                     &OutputFile {
@@ -228,7 +226,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .clone()
         .iter()
         .filter(|f| f.starts_with("src/pages"))
-        .map(|f| f.clone())
+        .cloned()
         .collect();
     list.extend(remote_file_list);
 
@@ -287,13 +285,13 @@ fn compile_src_files(
             .into_iter()
             // only scan .js files
             .filter(|result| {
-                return result.as_ref().map_or(false, |dir_entry| {
+                result.as_ref().map_or(false, |dir_entry| {
                     dir_entry
                         .file_name()
                         .to_str()
                         .map(|filename| filename.ends_with(".js"))
                         .unwrap_or(false)
-                });
+                })
             })
             // insert source files into cache and return a
             // HashMap so we can access the entries and such later
@@ -313,7 +311,7 @@ fn compile_src_files(
                     Source {
                         source: file_stuff,
                         kind: SourceKind::File {
-                            relative_path: path_buf.clone(),
+                            relative_path: path_buf,
                         },
                     },
                 );
@@ -357,7 +355,7 @@ fn compile_js(
         import_map,
     } = opts;
     let browser_output_file = output_dir.join(Path::new(&output_file.dest));
-    let js_browser = cache.get_js_for_browser(source_id, import_map.clone());
+    let js_browser = cache.get_js_for_browser(source_id, import_map);
     let file_dir = browser_output_file.parent().ok_or(eyre!(format!(
         "could not get .parent() directory for `{}`",
         &browser_output_file.display()

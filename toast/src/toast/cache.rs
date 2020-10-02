@@ -23,13 +23,11 @@ impl Cache {
     }
     pub fn get_js_for_browser(&mut self, key: &str, import_map: ImportMap) -> String {
         let db: &mut dyn Files = &mut self.db;
-        let js = db.js_for_browser(key.to_string(), self.npm_bin_dir.clone(), import_map);
-        js
+        db.js_for_browser(key.to_string(), self.npm_bin_dir.clone(), import_map)
     }
     pub fn get_js_for_server(&mut self, key: &str) -> String {
         let db: &mut dyn Files = &mut self.db;
-        let js = db.js_for_server(key.to_string(), self.npm_bin_dir.clone());
-        js
+        db.js_for_server(key.to_string(), self.npm_bin_dir.clone())
     }
 }
 

@@ -37,19 +37,19 @@ pub fn compile_js_for_browser(
         Some(cm.clone()),
     ));
 
-    let compiler = swc::Compiler::new(cm.clone(), handler.clone());
+    let compiler = swc::Compiler::new(cm.clone(), handler);
 
     let fm = cm.new_source_file(FileName::Custom(filename.clone()), source);
 
-    let parsed_program = compiler.parse_js(fm.clone(), JscTarget::Es2020, get_syntax(), true, true);
-    let built_config = compiler.config_for_file(opts, &FileName::Custom(filename.clone()));
-    let post_transform_program = parsed_program.and_then(|program| {
-        Ok(program.fold_with(&mut SWCImportMapRewrite {
+    let parsed_program = compiler.parse_js(fm, JscTarget::Es2020, get_syntax(), true, true);
+    let built_config = compiler.config_for_file(opts, &FileName::Custom(filename));
+    let post_transform_program = parsed_program.map(|program| {
+        program.fold_with(&mut SWCImportMapRewrite {
             import_map: &import_map,
-        }))
+        })
     });
     let result = compiler.transform(
-        post_transform_program.unwrap().clone(),
+        post_transform_program.unwrap(),
         false,
         built_config.unwrap().pass,
     );
@@ -69,7 +69,8 @@ pub fn compile_js_for_browser(
     // });
 
     let output = compiler.print(&result, SourceMapsConfig::default(), None, false);
-    return output.unwrap().code;
+
+    output.unwrap().code
 }
 
 #[instrument]
@@ -84,18 +85,14 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Path
         Some(cm.clone()),
     ));
 
-    let compiler = swc::Compiler::new(cm.clone(), handler.clone());
+    let compiler = swc::Compiler::new(cm.clone(), handler);
 
     let fm = cm.new_source_file(FileName::Custom(filename.clone()), source);
 
-    let parsed_program = compiler.parse_js(fm.clone(), JscTarget::Es2020, get_syntax(), true, true);
-    let built_config = compiler.config_for_file(opts, &FileName::Custom(filename.clone()));
+    let parsed_program = compiler.parse_js(fm, JscTarget::Es2020, get_syntax(), true, true);
+    let built_config = compiler.config_for_file(opts, &FileName::Custom(filename));
 
-    let result = compiler.transform(
-        parsed_program.unwrap().clone(),
-        false,
-        built_config.unwrap().pass,
-    );
+    let result = compiler.transform(parsed_program.unwrap(), false, built_config.unwrap().pass);
     // .and_then(|program| {
     //     if let Program::Module(mut module) = program {
     //         // println!("Matched {:?}!", i);
@@ -112,12 +109,13 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Path
     // });
 
     let output = compiler.print(&result, SourceMapsConfig::default(), None, false);
-    return output.unwrap().code;
+
+    output.unwrap().code
 }
 
 #[instrument]
 fn get_opts() -> Options {
-    return Options {
+    Options {
         is_module: true,
         config: Some(Config {
             jsc: JscConfig {
@@ -150,7 +148,7 @@ fn get_opts() -> Options {
             ..Default::default()
         }),
         ..Default::default()
-    };
+    }
 }
 
 #[instrument]

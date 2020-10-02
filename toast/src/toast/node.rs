@@ -15,7 +15,7 @@ pub fn render_to_html(
     let mut cmd = Command::new("node");
     let bin_str = bin
         .to_str()
-        .ok_or(eyre!("failed to make npm bin into str"))?;
+        .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
     cmd.args(&[
         "--no-warnings",
         "--loader",
@@ -43,7 +43,7 @@ pub async fn source_data(toast_js_file: &PathBuf, npm_bin_dir: PathBuf) -> Resul
         let mut cmd = Command::new("node");
         let bin_str = bin
             .to_str()
-            .ok_or(eyre!("failed to make npm bin into str"))?;
+            .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
         cmd.args(&[
             "--no-warnings",
             "--loader",
@@ -52,7 +52,7 @@ pub async fn source_data(toast_js_file: &PathBuf, npm_bin_dir: PathBuf) -> Resul
             "/var/tmp/toaster.sock",
             &toast_js_file
                 .to_str()
-                .ok_or(eyre!("failed to make toast_js_file into str"))?,
+                .ok_or_else(|| eyre!("failed to make toast_js_file into str"))?,
         ]);
         let output = cmd.output()?;
         // TODO: move stdout/stderr around so it's not just dumping to console
