@@ -29,7 +29,7 @@ async function main() {
     const wrapper = await import(pageWrapperPath);
     pageWrapper = wrapper.default;
   } catch (e) {
-    console.error("no user pagewrapper supplied/n", e);
+    console.error("no user pagewrapper supplied", e);
   }
 
   // render html
