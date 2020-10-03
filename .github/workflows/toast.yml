@@ -1,4 +1,7 @@
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
 
 name: Toast Tests
 
@@ -74,6 +77,7 @@ jobs:
     needs: test
     name: initiate release
     runs-on: ubuntu-latest
+    if: github.ref == "main"
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -84,10 +88,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            Changes in this Release
-            - First Change
-            - Second Change
+          release_name: CI Release ${{ github.ref }}
+          #   body: |
+          #     Changes in this Release
+          #     - First Change
+          #     - Second Change
           draft: true
           prerelease: false
