@@ -77,7 +77,7 @@ jobs:
     needs: test
     name: initiate release
     runs-on: ubuntu-latest
-    if: github.ref == "main"
+    if: github.ref == 'main'
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
