@@ -126,6 +126,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
                 .state()
                 .output_dir
                 .join(set_data.slug.trim_start_matches('/'));
+
             json_path.set_extension("json");
             async_std::fs::create_dir_all(&json_path.parent().unwrap()).await?;
             async_std::fs::write(json_path, set_data.data.to_string()).await?;
