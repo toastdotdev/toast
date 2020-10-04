@@ -1,0 +1,15 @@
+on:
+  release:
+    types: [created]
+
+    name: Build and Release binaries
+
+    jobs:
+      check:
+        name: build
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout sources
+            uses: actions/checkout@v2
+          - name: echo
+            run: 'echo "hi"'

@@ -72,12 +72,15 @@ jobs:
         with:
           command: clippy
           args: -- -D warnings
-
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
   start-release:
     needs: test
     name: initiate release
     runs-on: ubuntu-latest
-    if: github.ref == 'main'
+    if: $BRANCH_NAME == 'main'
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
