@@ -80,7 +80,7 @@ jobs:
     needs: test
     name: initiate release
     runs-on: ubuntu-latest
-    if: ${{steps.vars.outputs.branch}} == 'main'
+    if: steps.vars.outputs.branch == 'main'
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
