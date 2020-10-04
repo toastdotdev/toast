@@ -80,7 +80,7 @@ jobs:
     needs: test
     name: initiate release
     runs-on: ubuntu-latest
-    if: env.BRANCH_NAME == 'main'
+    if: ${{ env.BRANCH_NAME == 'main' }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
