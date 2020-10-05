@@ -155,3 +155,16 @@ jobs:
           asset_path: ${{ matrix.platform }}.tar.gz
           asset_name: ${{ matrix.platform }}.tar.gz
           asset_content_type: application/octet-stream
+      - uses: octokit/request-action@v2.x
+        id: publish-release
+        with:
+          route: PATCH /repos/:owner/:repo/releases/:release_id
+          owner: ${{ github.repository_owner }}
+          repository: ${{ github.repository }}
+          release_id: ${{ needs.start-release.outputs.id }}
+          name: Publish Draft Release
+          output: | # The | is significant!
+            title: Publishing Draft
+            summary: Draft should be published
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
