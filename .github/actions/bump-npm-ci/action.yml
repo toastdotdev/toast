@@ -1,5 +1,5 @@
 name: "bump-npm-ci"
 description: "bump the version of an npm package minor"
 runs:
-  using: "node14"
+  using: "node12"
   main: "index.mjs"

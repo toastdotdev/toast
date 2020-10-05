@@ -6,109 +6,106 @@ on:
 name: Toast Tests
 
 jobs:
-  branchname:
-    name: branch name
-    runs-on: ubuntu-latest
-    outputs:
-      branch: ${{ steps.extract_branch.outputs.branch }}
-    steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-  check:
-    name: cargo check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
+  # branchname:
+  #   name: branch name
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     branch: ${{ steps.extract_branch.outputs.branch }}
+  #   steps:
+  #     - name: Extract branch name
+  #       shell: bash
+  #       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+  #       id: extract_branch
+  # check:
+  #   name: cargo check
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v2
 
+  #     - name: Install nightly toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: nightly
+  #         override: true
+  #         components: rustfmt, clippy
 
-      # - name: Install nightly toolchain
-      #   uses: actions-rs/toolchain@v1
-      #   with:
-      #     toolchain: nightly
-      #     override: true
-      #     components: rustfmt, clippy
+  #     - name: Run cargo check
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: check
 
-      # - name: Run cargo check
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: check
+  # test:
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest, macos-latest, windows-latest]
+  #   name: cargo test
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v2
 
-  test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-    name: cargo test
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
+  #     - name: Install nightly toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: nightly
+  #         override: true
+  #         components: rustfmt, clippy
 
+  #     - name: Run cargo test
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: test
 
-      # - name: Install nightly toolchain
-      #   uses: actions-rs/toolchain@v1
-      #   with:
-      #     toolchain: nightly
-      #     override: true
-      #     components: rustfmt, clippy
+  # lints:
+  #   name: cargo fmt and cargo clippy
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v2
 
-      # - name: Run cargo test
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: test
+  #     - name: Install nightly toolchain
+  #       uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: nightly
+  #         override: true
+  #         components: rustfmt, clippy
 
-  lints:
-    name: cargo fmt and cargo clippy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
+  #     - name: Run cargo fmt
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: fmt
+  #         args: --all -- --check
 
-
-      # - name: Install nightly toolchain
-      #   uses: actions-rs/toolchain@v1
-      #   with:
-      #     toolchain: nightly
-      #     override: true
-      #     components: rustfmt, clippy
-
-      # - name: Run cargo fmt
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: fmt
-      #     args: --all -- --check
-
-      # - name: Run cargo clippy
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: clippy
-      #     args: -- -D warnings
-  start-release:
-    needs: [test, branchname]
-    name: initiate release
-    runs-on: ubuntu-latest
-    outputs:
-      release-url: ${{ steps.create_release.outputs.upload_url }}
-      release-id: ${{ steps.create_release.outputs.id }}
-    if: needs.branchname.outputs.branch == 'main'
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          # TODO: tag_name needs to be unique
-          tag_name: binaries-ci-${{github.sha}}
-          release_name: Binary CI Release
-          body: |
-            continuously released toast binaries
-          draft: true
-          prerelease: true
+  #     - name: Run cargo clippy
+  #       uses: actions-rs/cargo@v1
+  #       with:
+  #         command: clippy
+  #         args: -- -D warnings
+  # start-release:
+  #   needs: [test, branchname]
+  #   name: initiate release
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     release-url: ${{ steps.create_release.outputs.upload_url }}
+  #     release-id: ${{ steps.create_release.outputs.id }}
+  #   if: needs.branchname.outputs.branch == 'main'
+  #   steps:
+  #     - name: Checkout sources
+  #       uses: actions/checkout@v2
+  #     - name: Create Release
+  #       id: create_release
+  #       uses: actions/create-release@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+  #       with:
+  #         # TODO: tag_name needs to be unique
+  #         tag_name: binaries-ci-${{github.sha}}
+  #         release_name: Binary CI Release
+  #         body: |
+  #           continuously released toast binaries
+  #         draft: true
+  #         prerelease: true
 
   do-release:
     strategy:
@@ -124,50 +121,50 @@ jobs:
           - os: windows-latest
             platform: windows
             target: toast.exe
-    needs: start-release
+    # needs: start-release
     name: cargo build --release
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
 
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
-          components: rustfmt, clippy
+      # - name: Install nightly toolchain
+      #   uses: actions-rs/toolchain@v1
+      #   with:
+      #     toolchain: nightly
+      #     override: true
+      #     components: rustfmt, clippy
 
-      - name: Run cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
-      - name: tar the binary for upload
-        run: |
-          tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
-        shell: bash
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.start-release.outputs.release-url }}
-          asset_path: ${{ matrix.platform }}.tar.gz
-          asset_name: ${{ matrix.platform }}.tar.gz
-          asset_content_type: application/octet-stream
-      - name: Publish GH Release
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: "${{ needs.start-release.outputs.release-id }}",
-              draft: false,
-            });
+      # - name: Run cargo build
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: build
+      #     args: --release
+      # - name: tar the binary for upload
+      #   run: |
+      #     tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
+      #   shell: bash
+      # - name: Upload Release Asset
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ needs.start-release.outputs.release-url }}
+      #     asset_path: ${{ matrix.platform }}.tar.gz
+      #     asset_name: ${{ matrix.platform }}.tar.gz
+      #     asset_content_type: application/octet-stream
+      # - name: Publish GH Release
+      #   uses: actions/github-script@v3
+      #   with:
+      #     github-token: ${{secrets.GITHUB_TOKEN}}
+      #     script: |
+      #       github.repos.updateRelease({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         release_id: "${{ needs.start-release.outputs.release-id }}",
+      #         draft: false,
+      #       });
       - name: get latest toast version
         run: |
           echo "TOAST_VERSION=$(npm show toast version)" >> $GITHUB_ENV
