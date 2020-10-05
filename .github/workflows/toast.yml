@@ -109,6 +109,9 @@ jobs:
           prerelease: true
 
   do-release:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
     needs: start-release
     name: cargo build --production
     runs-on: ${{ matrix.os }}
