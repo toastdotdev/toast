@@ -7,6 +7,6 @@
   "license": "MIT",
   "dependencies": {
     "@sector/breadbox": "^0.0.4",
-    "toastrs": "*"
+    "toast": "*"
   }
 }

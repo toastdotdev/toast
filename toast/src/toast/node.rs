@@ -19,7 +19,7 @@ pub fn render_to_html(
     cmd.args(&[
         // "--no-warnings",
         "--loader",
-        "toastrs/src/loader.mjs",
+        "toast/src/loader.mjs",
         bin_str,
         &dir_of_input_files,
         &output_dir,
@@ -47,7 +47,7 @@ pub async fn source_data(toast_js_file: &PathBuf, npm_bin_dir: PathBuf) -> Resul
         cmd.args(&[
             // "--no-warnings",
             "--loader",
-            "toastrs/src/loader.mjs",
+            "toast/src/loader.mjs",
             bin_str,
             "/var/tmp/toaster.sock",
             &toast_js_file

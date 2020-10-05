@@ -1,6 +1,6 @@
 {
-  "name": "toastrs",
-  "version": "0.0.20",
+  "name": "toast",
+  "version": "0.3.0",
   "main": "index.js",
   "type": "module",
   "bin": {
@@ -10,6 +10,10 @@
   },
   "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
   "license": "MIT",
+  "engines": {
+    "node": ">=14.13"
+  },
+  "binaryHash": "6f35bd288073595f6072aa79485eecf4655c8d25",
   "scripts": {
     "postinstall": "node ./binary-management/install.js",
     "preuninstall": "node ./binary-management/uninstall.js"
@@ -18,17 +22,21 @@
     "toast",
     "toast-render.mjs",
     "toast-source-data.mjs",
-    "src"
+    "src",
+    "binary-management"
   ],
   "dependencies": {
     "@mdx-js/preact": "2.0.0-next.8",
     "@svgr/cli": "^5.4.0",
+    "axios": "^0.20.0",
     "binary-install": "^0.0.1",
     "console.table": "^0.10.0",
     "got": "^11.6.2",
     "module-alias": "^2.2.2",
     "preact": "^10.4.8",
     "preact-render-to-string": "^5.1.10",
-    "react-helmet": "^6.1.0"
+    "react-helmet": "^6.1.0",
+    "rimraf": "^3.0.2",
+    "tar": "^6.0.5"
   }
 }
