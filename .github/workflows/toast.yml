@@ -6,6 +6,16 @@ on:
 name: Toast Tests
 
 jobs:
+  branchname:
+    name: branch name
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.extract_branch.outputs.branch }}
+    steps:
+      - name: Extract branch name
+      shell: bash
+      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      id: extract_branch
   check:
     name: cargo check
     runs-on: ubuntu-latest
@@ -72,15 +82,11 @@ jobs:
         with:
           command: clippy
           args: -- -D warnings
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
   start-release:
     needs: test
     name: initiate release
     runs-on: ubuntu-latest
-    if: steps.vars.outputs.branch == 'main'
+    if: jobs.branchname.outputs.branch == 'main'
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
