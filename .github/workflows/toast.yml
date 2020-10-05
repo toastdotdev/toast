@@ -101,7 +101,6 @@ jobs:
         with:
           tag_name: binaries-ci
           release_name: Binary CI Release
-            body: |
-              continuously released toast binaries
+            body: continuously released toast binaries
           draft: true
           prerelease: true
