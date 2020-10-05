@@ -107,7 +107,7 @@ jobs:
   #         draft: true
   #         prerelease: true
 
-  do-release:
+  do-binary-release:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -127,6 +127,7 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+
 
       # - name: Install nightly toolchain
       #   uses: actions-rs/toolchain@v1
@@ -165,6 +166,13 @@ jobs:
       #         release_id: "${{ needs.start-release.outputs.release-id }}",
       #         draft: false,
       #       });
+  do-npm-release:
+    needs: [do-binary-release]
+    name: npm publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
       - name: get latest toast version
         run: |
           echo "TOAST_VERSION=$(npm show toast version)" >> $GITHUB_ENV
