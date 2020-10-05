@@ -13,9 +13,9 @@ jobs:
       branch: ${{ steps.extract_branch.outputs.branch }}
     steps:
       - name: Extract branch name
-      shell: bash
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-      id: extract_branch
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
   check:
     name: cargo check
     runs-on: ubuntu-latest
