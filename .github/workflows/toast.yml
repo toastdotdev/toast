@@ -186,6 +186,6 @@ jobs:
       - name: npm publish
         run: |
           cd toast-node-wrapper
-          npm publish
+          npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
