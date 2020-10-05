@@ -171,6 +171,9 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: "12"
       - name: modify NPM package version and binaryHash
         run: |
           TOAST_VERSION=$(npm show toast version)
