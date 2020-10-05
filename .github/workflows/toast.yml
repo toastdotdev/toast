@@ -91,6 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release-url: ${{ steps.create_release.outputs.upload_url }}
+      release-id: ${{ steps.create_release.outputs.id }}
     if: needs.branchname.outputs.branch == 'main'
     steps:
       - name: Checkout sources
@@ -163,6 +164,6 @@ jobs:
             github.repos.updateRelease({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              release_id: "${{ needs.start-release.outputs.id }}",
+              release_id: "${{ needs.start-release.outputs.release_id }}",
               draft: false,
             });
