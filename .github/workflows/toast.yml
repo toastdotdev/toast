@@ -102,6 +102,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
+          # TODO: tag_name needs to be unique
           tag_name: binaries-ci
           release_name: Binary CI Release
           body: |
@@ -116,13 +117,13 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: linux
-            target: ./target/release/toast
+            target: toast
           - os: macos-latest
             platform: macos
-            target: ./target/release/toast
+            target: toast
           - os: windows-latest
             platform: windows
-            target: ./target/release/toast.exe
+            target: toast.exe
     needs: start-release
     name: cargo build --release
     runs-on: ${{ matrix.os }}
@@ -144,7 +145,7 @@ jobs:
           args: --release
       - name: tar the binary for upload
         run: |
-          tar -cvzf ${{matrix.platform}}.tar.gz ${{matrix.target}}
+          tar -C target/release -cvzf ${{matrix.platform}}.tar.gz ${{matrix.target}}
         shell: bash
       - name: Upload Release Asset
         id: upload-release-asset
