@@ -181,7 +181,7 @@ jobs:
           echo $TOAST_VERSION
           echo $NEW_TOAST_VERSION
           echo $BINARY_HASH
-          sed "s/<binaryhash>/$BINARY_HASH/" toast-node-wrapper/package.json
-          sed "s/\"version\"\: \"$TOAST_VERSION\"/\"version\"\: \"$NEW_TOAST_VERSION\"/" toast-node-wrapper/package.json
+          sed -i "s/<binaryhash>/$BINARY_HASH/" toast-node-wrapper/package.json
+          sed -i "s/\"version\"\: \"$TOAST_VERSION\"/\"version\"\: \"$NEW_TOAST_VERSION\"/" toast-node-wrapper/package.json
           cat toast-node-wrapper/package.json
         shell: bash
