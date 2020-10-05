@@ -178,7 +178,7 @@ jobs:
           TOAST_VERSION=$(npm show toast version)
           NEW_TOAST_VERSION=$(echo $TOAST_VERSION | awk -F. '{printf("%d.%d.%d", $1, $2 , $3+1)}')
           BINARY_HASH=${{ github.sha }}
-          sed "s/<binaryhash>/$BINARY_HASH" toast-node-wrapper/package.json
-          sed "s/\"version\": \"$TOAST_VERSION\"/\"version\": \"$NEW_TOAST_VERSION\""
+          sed "s/<binaryhash>/$BINARY_HASH/" toast-node-wrapper/package.json
+          sed "s/\"version\": \"$TOAST_VERSION\"/\"version\": \"$NEW_TOAST_VERSION\"/"
           cat toast-node-wrapper/package.json
         shell: bash
