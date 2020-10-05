@@ -145,7 +145,7 @@ jobs:
           args: --release
       - name: tar the binary for upload
         run: |
-          tar -C target/release -cvzf ${{matrix.platform}}.tar.gz ${{matrix.target}}
+          tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
         shell: bash
       - name: Upload Release Asset
         id: upload-release-asset
