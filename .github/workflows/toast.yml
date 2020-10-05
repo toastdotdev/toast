@@ -7,6 +7,7 @@ name: Toast Tests
 
 jobs:
   branchname:
+    id: branchname
     name: branch name
     runs-on: ubuntu-latest
     outputs:
@@ -83,10 +84,10 @@ jobs:
           command: clippy
           args: -- -D warnings
   start-release:
-    needs: test
+    needs: [test, branchname]
     name: initiate release
     runs-on: ubuntu-latest
-    if: jobs.branchname.outputs.branch == 'main'
+    if: needs.branchname.outputs.branch == 'main'
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
