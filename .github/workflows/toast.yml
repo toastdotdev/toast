@@ -168,3 +168,11 @@ jobs:
               release_id: "${{ needs.start-release.outputs.release-id }}",
               draft: false,
             });
+      - name: get latest toast version
+        run: |
+          echo "TOAST_VERSION=$(npm show toast version)" >> $GITHUB_ENV
+      - name: modify NPM package version and binaryHash
+        uses: ./.github/actions/bump-npm-ci
+        with:
+          toastVersion: ${{ env.TOAST_VERSION }}
+          binaryHash: ${{ github.sha }}
