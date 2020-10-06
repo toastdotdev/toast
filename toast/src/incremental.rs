@@ -263,7 +263,9 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     };
     let static_dir = project_root_dir.join("static");
     let public_dir = project_root_dir.join("public");
-    copy(static_dir, public_dir, &options)?;
+    if static_dir.exists() && public_dir.exists() {
+        copy(static_dir, public_dir, &options)?;
+    }
 
     Ok(())
 }
