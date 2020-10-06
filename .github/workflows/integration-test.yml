@@ -9,6 +9,7 @@ name: Integration Test
 jobs:
   integration:
     name: test against toast.dev
+    fail-fast: false
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
