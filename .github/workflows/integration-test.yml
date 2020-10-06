@@ -38,6 +38,9 @@ jobs:
         with:
           toolchain: nightly
           override: true
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '14'
       - name: Run cargo build
         working-directory: toast
         run: cargo build --release
