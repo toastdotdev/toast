@@ -62,7 +62,7 @@ jobs:
         run: npm run postinstall
       - name: npm install in toast node wrapper
         working-directory: toast
-        run: cd toast-node-wrapper && npm ci
+        run: cd toast-node-wrapper && npm install
       - name: set the binary path and install
         working-directory: www.toast.dev
         run: node ./../toast/toast-node-wrapper/binary-management/installDev.js ./../toast/target/target/release/${{matrix.target}}
