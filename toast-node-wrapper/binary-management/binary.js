@@ -91,7 +91,7 @@ export const run = () => {
 export const setLocalBinaryPath = (path) => {
   let packageJSONContent = JSON.parse(readFileSync(packageJSON));
   packageJSONContent.devBinaryTar = `file://${path}`;
-  writeFileSync(packageJSON, packageJSONContent);
+  writeFileSync(packageJSON, JSON.stringify(packageJSONContent));
 };
 
 export const install = () => {
