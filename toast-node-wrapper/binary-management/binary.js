@@ -10,7 +10,7 @@ import os from "os";
 // import { join } from "path";
 import cTable from "console.table";
 import { Binary } from "binary-install";
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -89,8 +89,9 @@ export const run = () => {
 };
 
 export const setLocalBinaryPath = (path) => {
-  let packageJSON = JSON.parse(readFileSync(packageJSON));
-  packageJSON.devBinaryTar = `file://${path}`;
+  let packageJSONContent = JSON.parse(readFileSync(packageJSON));
+  packageJSONContent.devBinaryTar = `file://${path}`;
+  writeFileSync(packageJSON, packageJSONContent);
 };
 
 export const install = () => {
