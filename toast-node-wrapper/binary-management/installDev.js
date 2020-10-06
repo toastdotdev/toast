@@ -2,5 +2,5 @@
 
 import { setLocalBinaryPath, install } from "./binary.js";
 
-setLocalBinaryPath(process.argv[1]);
+setLocalBinaryPath(process.argv[2]);
 install();
