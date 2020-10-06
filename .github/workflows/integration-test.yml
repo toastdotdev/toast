@@ -50,13 +50,16 @@ jobs:
         run: |
           tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
         shell: bash
-      - name: npm www.toast.dev
+      - name: npm install in toast.dev
         working-directory: www.toast.dev
-        run: npm ci && npm run postinstall
+        run: npm ci
       - name: copy and replace toast in node_modules
         working-directory: www.toast.dev
-        run: cp ./../toast/toast-node-wrapper ./node_modules/toast
+        run: cp -r ./../toast/toast-node-wrapper ./node_modules/toast
         shell: bash
+      - name: posinstall on toast.dev
+        working-directory: www.toast.dev
+        run: npm run postinstall
       - name: set the binary path and install
         working-directory: www.toast.dev
         run: node ./../toast/toast-node-wrapper/binary-management/installDev.js ./../toast/target/target/release/${{matrix.target}}
