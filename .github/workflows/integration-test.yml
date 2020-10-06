@@ -4,7 +4,7 @@ on:
     branches:
       - main
 
-name: Integration TEst
+name: Integration Test
 
 jobs:
   do-binary-release:
@@ -22,7 +22,6 @@ jobs:
             platform: windows
             target: toast.exe
 
-    name: cargo build --release
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
