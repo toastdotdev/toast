@@ -41,6 +41,7 @@ jobs:
       - uses: actions/setup-node@v2-beta
         with:
           node-version: '14'
+          check-latest: true
       - name: Run cargo build
         working-directory: toast
         run: cargo build --release
