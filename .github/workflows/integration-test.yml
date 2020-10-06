@@ -37,10 +37,8 @@ jobs:
           toolchain: nightly
           override: true
       - name: Run cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
+        working-directory: toast
+        run: cargo build --release
       - name: tar the binary
         run: |
           tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
