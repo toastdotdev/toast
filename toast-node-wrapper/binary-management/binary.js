@@ -24,9 +24,14 @@ const packageJSON = join(
   "package.json"
 );
 
-const { version, name, repository, binaryHash, ...etc } = JSON.parse(
-  readFileSync(packageJSON)
-);
+const {
+  version,
+  name,
+  repository,
+  binaryHash,
+  devBinaryTar,
+  ...etc
+} = JSON.parse(readFileSync(packageJSON));
 
 const supportedPlatforms = [
   {
@@ -72,13 +77,20 @@ const getBinary = () => {
   // the url for this binary is constructed from values in `package.json`
   // https://github.com/EverlastingBugstopper/binary-install/releases/download/v1.0.0/binary-install-example-v1.0.0-x86_64-apple-darwin.tar.gz
   // const url = `${repository.url}/releases/download/v${version}/${name}-v${version}-${platform}.tar.gz`;
-  const url = `https://github.com/toastdotdev/toast/releases/download/binaries-ci-${binaryHash}/${platform}.tar.gz`;
+  const url = devBinaryTar
+    ? devBinaryTar
+    : `https://github.com/toastdotdev/toast/releases/download/binaries-ci-${binaryHash}/${platform}.tar.gz`;
   return new Binary(url, { name: "toast" });
 };
 
 export const run = () => {
   const binary = getBinary();
   binary.run();
+};
+
+export const setLocalBinaryPath = (path) => {
+  let packageJSON = JSON.parse(readFileSync(packageJSON));
+  packageJSON.devBinaryTar = `file://${path}`;
 };
 
 export const install = () => {

@@ -1,0 +1,66 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+name: Integration TEst
+
+jobs:
+  do-binary-release:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            target: toast
+          - os: macos-latest
+            platform: macos
+            target: toast
+          - os: windows-latest
+            platform: windows
+            target: toast.exe
+
+    name: cargo build --release
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: toast
+      - uses: actions/checkout@v2
+        with:
+          repository: toastdotdev/www.toast.dev
+          path: www.toast.dev
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+      - name: Run cargo build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - name: tar the binary
+        run: |
+          tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
+        shell: bash
+      - name: link toast node wrapper
+        working-directory: toast/toast-node-wrapper
+        run: yarn link
+      - name: yarn www.toast.dev
+        working-directory: www.toast.dev
+        run: yarn && yarn postinstall && yarn link toast
+      - name: set the binary path and install
+        working-directory: www.toast.dev
+        run: node ./../toast/toast-node-wrapper/binary-management/installDev.js ./../toast/target/target/release/${{matrix.target}}
+      - name: toast incremental
+        working-directory: www.toast.dev
+        run: yarn build
+      - name: deploy
+        if: success()
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: netlify deploy --dir=public --message ${{ github.event.pull_request.html_url }}

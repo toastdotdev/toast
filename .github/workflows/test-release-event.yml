@@ -1,4 +1,4 @@
-on: release
+on: push
 
 jobs:
   one:
