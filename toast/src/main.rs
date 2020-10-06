@@ -73,7 +73,7 @@ fn main() -> Result<()> {
 
     color_eyre::config::HookBuilder::default()
         // .panic_message(MyPanicMessage)
-        .issue_url("https://github.com/christopherBiscardi/toast/issues/new")
+        .issue_url("https://github.com/toastdotdev/toast/issues/new")
         .add_issue_metadata("version", VERSION)
         .add_issue_metadata(
             "os_type",
