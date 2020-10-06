@@ -12,7 +12,7 @@ import cTable from "console.table";
 import { Binary } from "binary-install";
 import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 
 const error = (msg) => {
   console.error(msg);
@@ -90,7 +90,7 @@ export const run = () => {
 
 export const setLocalBinaryPath = (path) => {
   let packageJSONContent = JSON.parse(readFileSync(packageJSON));
-  packageJSONContent.devBinaryTar = `file://${require.resolve(path)}`;
+  packageJSONContent.devBinaryTar = `file://${resolve(path)}`;
   writeFileSync(packageJSON, JSON.stringify(packageJSONContent));
 };
 
