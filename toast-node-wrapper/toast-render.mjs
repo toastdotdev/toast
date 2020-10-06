@@ -1,5 +1,6 @@
 import path from "path";
-import { existsSync, promises as fs } from "fs";
+import { fileURLToPath } from "url";
+import { promises as fs } from "fs";
 import "./src/module-aliases.mjs";
 import { render } from "./src/page-renderer-pre.mjs";
 
@@ -11,12 +12,24 @@ main();
 async function main() {
   // require pageWrapper
   let pageWrapper;
-  const pageWrapperPath = path.resolve(srcDir, "src/page-wrapper.js");
+  // Imports are expected to be in posix. We receive a full path here through
+  // the import.meta.url, use the srcDir and convert it to posix.
+  // It also can't import if it begins with a drive letter on Windows, so
+  // we find the relative path from this file to the srcDir.
+  const pageWrapperPath =
+    "./" +
+    path.posix.join(
+      ...path
+        .relative(path.dirname(fileURLToPath(import.meta.url)), srcDir)
+        .split(path.sep),
+      "src",
+      "page-wrapper.js"
+    );
   try {
     const wrapper = await import(pageWrapperPath);
     pageWrapper = wrapper.default;
   } catch (e) {
-    console.log("no user pagewrapper supplied");
+    console.error("no user pagewrapper supplied", e);
   }
 
   // render html
