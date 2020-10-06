@@ -136,7 +136,15 @@ fn get_opts() -> Options {
                     },
                     optimizer: Some(OptimizerConfig {
                         globals: Some(GlobalPassOption {
-                            envs: std::env::vars().map(|(k, _)| k).collect(),
+                            envs: std::env::vars()
+                                .filter_map(|(k, _)| {
+                                    if k.starts_with("TOAST_") {
+                                        Some(k)
+                                    } else {
+                                        None
+                                    }
+                                })
+                                .collect(),
                             ..Default::default()
                         }),
                         ..Default::default()
