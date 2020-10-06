@@ -41,6 +41,7 @@ jobs:
         working-directory: toast
         run: cargo build --release
       - name: tar the binary
+        working-directory: toast
         run: |
           tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
         shell: bash
@@ -57,8 +58,9 @@ jobs:
         working-directory: www.toast.dev
         run: yarn build
       - name: deploy
+        working-directory: www.toast.dev
         if: success()
         env:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        run: netlify deploy --dir=public --message ${{ github.event.pull_request.html_url }}
+        run: echo netlify deploy --dir=public --message ${{ github.event.pull_request.html_url }}
