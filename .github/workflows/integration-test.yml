@@ -46,12 +46,13 @@ jobs:
         run: |
           tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
         shell: bash
-      - name: link toast node wrapper
-        working-directory: toast/toast-node-wrapper
-        run: npm link
       - name: npm www.toast.dev
         working-directory: www.toast.dev
-        run: npm ci && npm run postinstall && npm link toast
+        run: npm ci && npm run postinstall
+      - name: copy and replace toast in node_modules
+        working-directory: www.toast.dev
+        run: cp ./../toast/toast-node-wrapper ./node_modules/toast
+        shell: bash
       - name: set the binary path and install
         working-directory: www.toast.dev
         run: node ./../toast/toast-node-wrapper/binary-management/installDev.js ./../toast/target/target/release/${{matrix.target}}
