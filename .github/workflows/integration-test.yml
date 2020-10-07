@@ -48,7 +48,7 @@ jobs:
       - name: tar the binary
         working-directory: toast
         run: |
-          tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
+          tar -C target -cvzf ./target/${{matrix.platform}}.tar.gz release/${{matrix.target}}
         shell: bash
       - name: npm install in toast.dev
         working-directory: www.toast.dev
@@ -65,7 +65,7 @@ jobs:
         run: cd toast-node-wrapper && npm install
       - name: set the binary path and install
         working-directory: www.toast.dev
-        run: node ./../toast/toast-node-wrapper/binary-management/installDev.js ./../toast/target/target/release/${{matrix.target}}
+        run: node ./../toast/toast-node-wrapper/binary-management/installDev.js ./../toast/target/${{matrix.platform}}.tar.gz
       - name: toast incremental
         working-directory: www.toast.dev
         run: npm run build
