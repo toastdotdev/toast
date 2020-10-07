@@ -1,36 +1,38 @@
 # Contributing
 
-Thanks for being willing to contribute!
-
-**Working on your first Pull Request?** You can learn how from this _free_
-series [How to Contribute to an Open Source Project on GitHub][egghead]
+Thanks for contributing to Toast!
 
 ## Project setup
 
-1.  Fork and clone the repo
-2.  Run `yarn install` to install dependencies
-3.  Create a branch for your PR with `git checkout -b pr/your-branch-name`
+The Toast project is a combination of Rust and JavaScript. We use both [Cargo Workspaces](https://doc.rust-lang.org/cargo/reference/workspaces.html) and [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/).
 
-> Tip: Keep your `master` branch pointing at the original repository and make
-> pull requests from branches on your fork. To do this, run:
->
-> ```
-> git remote add upstream https://github.com/toastdotdev/toast.git
-> git fetch upstream
-> git branch --set-upstream-to=upstream/main main
-> ```
->
-> This will add the original repository as a "remote" called "upstream," Then
-> fetch the git information from that remote, then set your local `master`
-> branch to use the upstream main branch whenever you run `git pull`. Then you
-> can make all of your pull request branches based on this `main` branch.
-> Whenever you want to update your version of `main`, do a regular `git pull`.
+1.  Fork the toast repo on GitHub
+1.  `git clone` your fork
+1.  Create a branch for your PR with `git checkout -b your-branch-name`
+1.  Run `yarn` to bootstrap the yarn workspaces
+1.  Run `cargo build` to build the Rust workspaces
+
+### Project Layout
+
+There are a few files to be aware of.
+
+- The `toast` directory is the Rust code for the Toast binaries.
+- `svgrs` is unfinished tooling for SVG optimization and conversion to JSX.
+- `toast-node-wrapper` is the package that turns into `bread` or `toast` on NPM
+- `Cargo.*` files are Rust related, while `yarn.lock` is yarn/node related
+
+### Node setup
+
+- You probably want [nvm](https://github.com/nvm-sh/nvm)
+- Run `nvm i v14` if you don't have the latest v14 of node installed
 
 ### Rust setup
 
-If you're going to help with the rust code you'll need [Rust installed and cargo (Rust's build tool)][rust] on your local dev machine.
+If you are new to Rust, you can learn the language by [going through Rustlings with these videos](https://egghead.io/playlists/learning-rust-by-solving-the-rustlings-exercises-a722).
 
-Test installs with the following commands:
+- You'll want to install [rustup](https://rustup.rs/)
+- after rustup is installed, you'll need a nightly toolchain to work with Toast so run `rustup toolchain install nightly`
+- You can test your install with the following commands, which should both work
 
 ```bash
 rustc --version
@@ -43,6 +45,5 @@ Please checkout the [the open issues][issues]
 
 Also, please watch the repo and respond to questions/bug reports/feature requests! Thanks!
 
-[egghead]: https://egghead.io/series/how-to-contribute-to-an-open-source-project-on-github
 [issues]: https://github.com/toastdotdev/toast/issues
 [rust]: https://www.rust-lang.org/learn/get-started
