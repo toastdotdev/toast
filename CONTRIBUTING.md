@@ -2,6 +2,8 @@
 
 Thanks for contributing to Toast!
 
+You can find the maintainers and other contributors [in Discord][discord] as well as on the GitHub repo.
+
 ## Project setup
 
 The Toast project is a combination of Rust and JavaScript. We use both [Cargo Workspaces](https://doc.rust-lang.org/cargo/reference/workspaces.html) and [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/).
@@ -46,3 +48,4 @@ There are plenty of [open issues][issues] that may fit your skills and expertise
 [issues]: https://github.com/toastdotdev/toast/issues
 [www-issues]: https://github.com/toastdotdev/www.toast.dev/issues
 [rust]: https://www.rust-lang.org/learn/get-started
+[discord]: https://discord.gg/m2RdVRA
