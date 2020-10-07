@@ -3,6 +3,10 @@ name = "svgrs"
 version = "0.1.0"
 authors = ["Christopher Biscardi <chris@christopherbiscardi.com>"]
 edition = "2018"
+description = "SVG optimization and conversion tooling"
+readme = "./README.md"
+keywords = ["svg"]
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

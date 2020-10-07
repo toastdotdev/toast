@@ -39,11 +39,10 @@ rustc --version
 cargo --version
 ```
 
-## Help needed
+## What counts as a contribution?
 
-Please checkout the [the open issues][issues]
-
-Also, please watch the repo and respond to questions/bug reports/feature requests! Thanks!
+There are plenty of [open issues][issues] that may fit your skills and expertise. We also highly value documentation changes, user feedback on issues, and more. Code commits are not the only way to contribute. You may also wish to check out the [www.toast.dev issues](https://github.com/toastdotdev/toast/issues).
 
 [issues]: https://github.com/toastdotdev/toast/issues
+[www-issues]: https://github.com/toastdotdev/www.toast.dev/issues
 [rust]: https://www.rust-lang.org/learn/get-started
