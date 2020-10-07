@@ -80,17 +80,17 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         )
     })?;
 
-    let pb = Arc::new(ProgressBar::new_spinner());
-    pb.enable_steady_tick(120);
-    pb.set_style(
+    let create_pages_pb = Arc::new(ProgressBar::new_spinner());
+    create_pages_pb.enable_steady_tick(120);
+    create_pages_pb.set_style(
         ProgressStyle::default_spinner()
             // For more spinners check out the cli-spinners project:
             // https://github.com/sindresorhus/cli-spinners/blob/master/spinners.json
             .tick_strings(&["▹▹▹", "▸▹▹", "▹▸▹", "▹▹▸", "▪▪▪"])
             .template("{spinner:.blue} [{elapsed}] {pos} {wide_msg}"),
     );
-    pb.set_message("fetching data...");
-    pb.tick();
+    create_pages_pb.set_message("fetching data...");
+    create_pages_pb.tick();
     // channel to listen for createPage events
     let (tx, rx) = unbounded();
     // create incremental cache db
@@ -100,7 +100,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     let mut app = tide::with_state(TideSharedState {
         tx,
         output_dir: output_dir.clone(),
-        create_page_progress_bar: pb.clone(),
+        create_page_progress_bar: create_pages_pb.clone(),
     });
     let sock = format!("http+unix://{}", "/var/tmp/toaster.sock");
     app.at("/").get(|_| async { Ok("ready") });
@@ -162,7 +162,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
 
     let _maybe_gone = server.cancel();
     let _result = fs::remove_file("/var/tmp/toaster.sock");
-    pb.abandon_with_message("pages created");
+    create_pages_pb.abandon_with_message("pages created");
 
     let v: Vec<Event> = rx.try_iter().collect();
     for x in v.clone() {
@@ -183,22 +183,22 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         };
     }
 
-    let pb2 = Arc::new(ProgressBar::new_spinner());
-    pb2.enable_steady_tick(120);
-    pb2.set_style(
+    let compile_pb = Arc::new(ProgressBar::new_spinner());
+    compile_pb.enable_steady_tick(120);
+    compile_pb.set_style(
         ProgressStyle::default_spinner()
             // For more spinners check out the cli-spinners project:
             // https://github.com/sindresorhus/cli-spinners/blob/master/spinners.json
             .tick_strings(&["▹▹▹", "▸▹▹", "▹▸▹", "▹▹▸", "▪▪▪"])
             .template("{spinner:.blue} [{elapsed}] {pos}/{len} {wide_msg}"),
     );
-    pb2.set_message("compiling...");
-    pb2.tick();
+    compile_pb.set_message("compiling...");
+    compile_pb.tick();
     for x in v.clone() {
         match x {
             Event::CreatePage(CreatePage { slug, .. }) => {
-                pb2.inc(1);
-                pb2.set_message(slug.as_str());
+                compile_pb.inc(1);
+                compile_pb.set_message(slug.as_str());
                 compile_js(
                     &slug,
                     &OutputFile {
@@ -217,7 +217,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
             }
         }
     }
-    pb2.abandon_with_message("sources compiled");
+    compile_pb.abandon_with_message("sources compiled");
 
     let remote_file_list: Vec<String> = v
         .iter()
@@ -231,24 +231,24 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .collect();
     list.extend(remote_file_list);
 
-    let pb3 = Arc::new(ProgressBar::new_spinner());
-    pb3.enable_steady_tick(120);
-    pb3.set_style(
+    let render_pb = Arc::new(ProgressBar::new_spinner());
+    render_pb.enable_steady_tick(120);
+    render_pb.set_style(
         ProgressStyle::default_spinner()
             // For more spinners check out the cli-spinners project:
             // https://github.com/sindresorhus/cli-spinners/blob/master/spinners.json
             .tick_strings(&["▹▹▹", "▸▹▹", "▹▸▹", "▹▹▸", "▪▪▪"])
             .template("{spinner:.blue} [{elapsed}] {wide_msg}"),
     );
-    pb3.set_message("rendering html...");
-    pb3.tick();
+    render_pb.set_message("rendering html...");
+    render_pb.tick();
     render_to_html(
         tmp_dir.into_os_string().into_string().unwrap(),
         output_dir.into_os_string().into_string().unwrap(),
         list,
         npm_bin_dir,
     )?;
-    pb3.abandon_with_message("html rendered");
+    render_pb.abandon_with_message("html rendered");
 
     // # copy static dir to public dir
     //
