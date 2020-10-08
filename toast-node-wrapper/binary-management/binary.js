@@ -84,8 +84,6 @@ class Binary {
   }
 
   async install() {
-    if (binaryHash === "<binaryhash>" && !devBinaryTar) return;
-
     const dir = this._getInstallDirectory();
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
