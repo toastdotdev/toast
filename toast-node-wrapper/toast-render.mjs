@@ -29,7 +29,9 @@ async function main() {
     const wrapper = await import(pageWrapperPath);
     pageWrapper = wrapper.default;
   } catch (e) {
-    console.error("no user pagewrapper supplied", e);
+    if (e.code !== "ERR_MODULE_NOT_FOUND") {
+      console.error("Error while reading page-wrapper", e);
+    }
   }
 
   // render html
