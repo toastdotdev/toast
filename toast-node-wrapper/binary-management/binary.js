@@ -232,7 +232,7 @@ export const setLocalBinaryPath = (localPath) => {
 
 export const install = () => {
   const binary = getBinary();
-  binary.install(); //.catch((e) => console.error("Issue with install.\n", e));
+  binary.install();
 };
 
 export const uninstall = () => {
