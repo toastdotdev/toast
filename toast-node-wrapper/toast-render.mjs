@@ -1,6 +1,6 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import { promises as fs } from "fs";
+import { promises as fs, existsSync } from "fs";
 import "./src/module-aliases.mjs";
 import { render } from "./src/page-renderer-pre.mjs";
 
@@ -12,25 +12,30 @@ main();
 async function main() {
   // require pageWrapper
   let pageWrapper;
-  // Imports are expected to be in posix. We receive a full path here through
-  // the import.meta.url, use the srcDir and convert it to posix.
-  // It also can't import if it begins with a drive letter on Windows, so
-  // we find the relative path from this file to the srcDir.
-  const pageWrapperPath =
-    "./" +
-    path.posix.join(
-      ...path
-        .relative(path.dirname(fileURLToPath(import.meta.url)), srcDir)
-        .split(path.sep),
-      "src",
-      "page-wrapper.js"
-    );
-  try {
-    const wrapper = await import(pageWrapperPath);
-    pageWrapper = wrapper.default;
-  } catch (e) {
-    if (e.code !== "ERR_MODULE_NOT_FOUND") {
-      console.error("Error while reading page-wrapper", e);
+  const pageWrapperExists = existsSync(
+    path.join(srcDir, "src", "page-wrapper.js")
+  );
+
+  // Only try to import the page wrapper if it exists, otherwise ignore
+  if (pageWrapperExists) {
+    // Imports are expected to be in posix. We receive a full path here through
+    // the import.meta.url, use the srcDir and convert it to posix.
+    // It also can't import if it begins with a drive letter on Windows, so
+    // we find the relative path from this file to the srcDir.
+    const pageWrapperPath =
+      "./" +
+      path.posix.join(
+        ...path
+          .relative(path.dirname(fileURLToPath(import.meta.url)), srcDir)
+          .split(path.sep),
+        "src",
+        "page-wrapper.js"
+      );
+    try {
+      const wrapper = await import(pageWrapperPath);
+      pageWrapper = wrapper.default;
+    } catch (e) {
+      console.error("Error while importing page-wrapper", e);
     }
   }
 
