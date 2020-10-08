@@ -4,6 +4,7 @@ import { spawnSync } from "child_process";
 
 import axios from "axios";
 import tar from "tar";
+import envPaths from "env-paths";
 import rimraf from "rimraf";
 
 import os from "os";
@@ -12,12 +13,12 @@ import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 
-const error = (msg) => {
-  console.error(msg);
+const error = (msg, e) => {
+  console.error(msg, e);
   process.exit(1);
 };
 
-// this wsa originally a soft fork of binary-install
+// this was originally a soft fork of binary-install
 // https://github.com/cloudflare/binary-install
 // we need to add versioning and local fetching
 class Binary {
@@ -50,9 +51,7 @@ class Binary {
     }
     this.url = url;
     this.name = data.name || -1;
-    this.installDirectory =
-      data.installDirectory ||
-      join(path.dirname(fileURLToPath(import.meta.url)), "bin");
+    this.installDirectory = data.installDirectory || envPaths(this.name).config;
     this.binaryDirectory = -1;
     this.binaryPath = -1;
   }
@@ -97,7 +96,7 @@ class Binary {
     }
 
     mkdirSync(this.binaryDirectory, { recursive: true });
-    console.log(this.binaryDirectory);
+
     if (!this.url.startsWith("http")) {
       console.log(`Extracting release from ${this.url}`);
       tar
@@ -108,7 +107,7 @@ class Binary {
           );
         })
         .catch((e) => {
-          error(`Error extracting release: ${e.message}`);
+          error(`Error extracting release: ${e.message}`, e);
         });
     } else {
       console.log(`Downloading release from ${this.url}`);
@@ -123,7 +122,7 @@ class Binary {
           );
         })
         .catch((e) => {
-          error(`Error fetching release: ${e.message}`);
+          error("Error fetching release", e.message);
         });
     }
   }
@@ -146,7 +145,8 @@ class Binary {
     const result = spawnSync(binaryPath, args, options);
 
     if (result.error) {
-      error(result.error);
+      console.error(result.error);
+      process.exit(1);
     }
 
     process.exit(result.status);

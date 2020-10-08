@@ -31,6 +31,7 @@
     "axios": "^0.20.0",
     "binary-install": "^0.0.1",
     "console.table": "^0.10.0",
+    "env-paths": "^2.2.0",
     "got": "^11.6.2",
     "module-alias": "^2.2.2",
     "preact": "^10.4.8",
