@@ -75,4 +75,4 @@ jobs:
         env:
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        run: echo netlify deploy --dir=public --message ${{ github.event.head_commit.url }}
+        run: netlify deploy --dir=public --message ${{ github.event.head_commit.url }}
