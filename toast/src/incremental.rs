@@ -28,6 +28,7 @@ pub struct IncrementalOpts<'a> {
     pub project_root_dir: &'a PathBuf,
     pub output_dir: PathBuf,
     pub npm_bin_dir: PathBuf,
+    pub toast_module_path: Option<PathBuf>,
     pub import_map: ImportMap,
 }
 
@@ -66,6 +67,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         project_root_dir,
         output_dir,
         npm_bin_dir,
+        toast_module_path,
         import_map,
     } = opts;
     let tmp_dir = {
@@ -147,6 +149,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
             project_root_dir: &project_root_dir,
             output_dir: output_dir.clone(),
             npm_bin_dir: npm_bin_dir.clone(),
+            toast_module_path: toast_module_path.clone(),
             import_map: import_map.clone(),
         },
         &mut cache,
@@ -157,8 +160,12 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .iter()
         .map(|(_, output_file)| output_file.dest.clone())
         .collect::<Vec<String>>();
-    let _data_from_user =
-        source_data(&project_root_dir.join("toast.js"), npm_bin_dir.clone()).await;
+    let _data_from_user = source_data(
+        &project_root_dir.join("toast.js"),
+        toast_module_path.clone(),
+        npm_bin_dir.clone(),
+    )
+    .await;
 
     let _maybe_gone = server.cancel();
     let _result = fs::remove_file("/var/tmp/toaster.sock");
@@ -209,6 +216,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
                         project_root_dir: &project_root_dir,
                         output_dir: output_dir.clone(),
                         npm_bin_dir: npm_bin_dir.clone(),
+                        toast_module_path: toast_module_path.clone(),
                         import_map: import_map.clone(),
                     },
                     &mut cache,
@@ -246,6 +254,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         tmp_dir.into_os_string().into_string().unwrap(),
         output_dir.into_os_string().into_string().unwrap(),
         list,
+        toast_module_path,
         npm_bin_dir,
     )?;
     render_pb.abandon_with_message("html rendered");
@@ -281,6 +290,7 @@ fn compile_src_files(
         project_root_dir,
         output_dir,
         npm_bin_dir,
+        toast_module_path,
         import_map,
     } = opts;
     let files_by_source_id: HashMap<String, OutputFile> =
@@ -333,6 +343,7 @@ fn compile_src_files(
                 project_root_dir: &project_root_dir,
                 output_dir: output_dir.clone(),
                 npm_bin_dir: npm_bin_dir.clone(),
+                toast_module_path: toast_module_path.clone(),
                 import_map: import_map.clone(),
             },
             cache,
@@ -355,6 +366,7 @@ fn compile_js(
         project_root_dir: _,
         output_dir,
         npm_bin_dir: _,
+        toast_module_path: _,
         import_map,
     } = opts;
     let browser_output_file = output_dir.join(Path::new(&output_file.dest));

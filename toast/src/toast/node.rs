@@ -9,9 +9,15 @@ pub fn render_to_html(
     dir_of_input_files: String,
     output_dir: String,
     filepaths: Vec<String>,
+    toast_module_path: Option<PathBuf>,
     npm_bin_dir: PathBuf,
 ) -> Result<()> {
-    let bin = npm_bin_dir.join("toast-render");
+    let bin = if toast_module_path.is_some() {
+        toast_module_path.unwrap()
+    } else {
+        npm_bin_dir
+    }
+    .join("toast-render");
     let mut cmd = Command::new("node");
     let bin_str = bin
         .to_str()
@@ -34,12 +40,21 @@ pub fn render_to_html(
 }
 
 #[instrument]
-pub async fn source_data(toast_js_file: &PathBuf, npm_bin_dir: PathBuf) -> Result<()> {
+pub async fn source_data(
+    toast_js_file: &PathBuf,
+    toast_module_path: Option<PathBuf>,
+    npm_bin_dir: PathBuf,
+) -> Result<()> {
     // not a guarantee that toast.js will exist when node
     // goes to look for it: just a sanity check to not
     // execute Command if we don't need to
     if toast_js_file.exists() {
-        let bin = npm_bin_dir.join("toast-source-data");
+        let bin = if toast_module_path.is_some() {
+            toast_module_path.unwrap()
+        } else {
+            npm_bin_dir
+        }
+        .join("toast-source-data");
         let mut cmd = Command::new("node");
         let bin_str = bin
             .to_str()

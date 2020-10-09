@@ -19,14 +19,18 @@ use toast::breadbox::parse_import_map;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[instrument]
-fn get_npm_bin_dir() -> Result<PathBuf> {
-    let npm_path = which::which("npm").expect("failed to get npm path");
-    let output = Command::new(npm_path)
-        .arg("bin")
-        .output()
-        .expect("failed to get npm bin dir");
-    let possible_path = std::str::from_utf8(&output.stdout)?;
-    Ok(PathBuf::from(possible_path.trim()))
+fn get_npm_bin_dir(manual_path: Option<PathBuf>) -> Result<PathBuf> {
+    if manual_path != None {
+        Ok(manual_path.unwrap())
+    } else {
+        let npm_path = which::which("npm").expect("failed to get npm path");
+        let output = Command::new(npm_path)
+            .arg("bin")
+            .output()
+            .expect("failed to get npm bin dir");
+        let possible_path = std::str::from_utf8(&output.stdout)?;
+        Ok(PathBuf::from(possible_path.trim()))
+    }
 }
 
 #[instrument]
@@ -97,7 +101,6 @@ fn main() -> Result<()> {
     // });
     // event := builder.new_event()
     // event.add_field("key", Value::String("val".to_string())), event.add(data)
-    let npm_bin_dir = get_npm_bin_dir()?;
     let opt = Toast::from_args();
 
     match opt {
@@ -105,6 +108,8 @@ fn main() -> Result<()> {
             debug,
             input_dir,
             output_dir,
+            toast_module_path,
+            npm_bin_dir,
         } => {
             let import_map = {
                 let import_map_filepath = input_dir
@@ -126,6 +131,7 @@ fn main() -> Result<()> {
                 })?
             };
 
+            let npm_bin_dir_with_default = get_npm_bin_dir(npm_bin_dir)?;
             task::block_on(incremental_compile(IncrementalOpts {
                 debug,
                 project_root_dir: &input_dir,
@@ -144,7 +150,8 @@ fn main() -> Result<()> {
                             .wrap_err_with(|| "Failed canonicalize the output directory path")?
                     }
                 },
-                npm_bin_dir,
+                npm_bin_dir: npm_bin_dir_with_default,
+                toast_module_path,
                 import_map,
             }))
         }
