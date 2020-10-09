@@ -142,13 +142,13 @@ class Binary {
     }
   }
 
-  run() {
+  run(extraArgs = []) {
     const binaryPath = this._getBinaryPath();
     const [, , ...args] = process.argv;
 
     const options = { cwd: process.cwd(), stdio: "inherit" };
 
-    const result = spawnSync(binaryPath, args, options);
+    const result = spawnSync(binaryPath, [...args, ...extraArgs], options);
 
     if (result.error) {
       console.error(result.error);
@@ -225,7 +225,11 @@ const getBinary = () => {
 
 export const run = () => {
   const binary = getBinary();
-  binary.run();
+  const toastModules = path.dirname(
+    path.dirname(fileURLToPath(import.meta.url))
+  );
+  const args = ["--toast-module-path", toastModules];
+  binary.run(args);
 };
 
 export const setLocalBinaryPath = (localPath) => {
