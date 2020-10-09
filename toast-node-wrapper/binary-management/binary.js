@@ -100,7 +100,9 @@ class Binary {
     mkdirSync(this.binaryDirectory, { recursive: true });
 
     if (!this.url.startsWith("http")) {
-      console.log(`Extracting release from ${this.url}`);
+      console.log(
+        `Extracting release from ${this.url} to ${this.binaryDirectory}`
+      );
       tar
         .x({ file: this.url, strip: 1, C: this.binaryDirectory })
         .then(() => {
@@ -112,7 +114,9 @@ class Binary {
           error(`Error extracting release: ${e.message}`, e);
         });
     } else {
-      console.log(`Downloading release from ${this.url}`);
+      console.log(
+        `Downloading release from ${this.url} to ${this.binaryDirectory}`
+      );
 
       return axios({ url: this.url, responseType: "stream" })
         .then((res) => {
