@@ -2,6 +2,7 @@ on: release
 
 jobs:
   one:
+    runs-on: ubuntu-latest
     steps:
       - name: Dump GitHub context
         env:

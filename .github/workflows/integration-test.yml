@@ -1,0 +1,78 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+name: Integration Test
+
+jobs:
+  integration:
+    name: test against toast.dev
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            target: toast
+          - os: macos-latest
+            platform: macos
+            target: toast
+          - os: windows-latest
+            platform: windows
+            target: toast.exe
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: toast
+      - uses: actions/checkout@v2
+        with:
+          repository: toastdotdev/www.toast.dev
+          path: www.toast.dev
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+      - uses: actions/setup-node@v2-beta
+        with:
+          node-version: '14'
+          check-latest: true
+      - name: Run cargo build
+        working-directory: toast
+        run: cargo build --release
+      - name: tar the binary
+        working-directory: toast
+        run: |
+          tar -C target -cvzf ./target/${{matrix.platform}}.tar.gz release/${{matrix.target}}
+        shell: bash
+      - name: npm install in toast.dev
+        working-directory: www.toast.dev
+        run: npm ci
+      - name: copy and replace toast in node_modules
+        working-directory: www.toast.dev
+        run: cp -r ./../toast/toast-node-wrapper ./node_modules/toast
+        shell: bash
+      - name: posinstall on toast.dev
+        working-directory: www.toast.dev
+        run: npm run postinstall
+      - name: npm install in toast node wrapper
+        working-directory: toast
+        run: cd toast-node-wrapper && npm install
+      - name: set the binary path and install
+        working-directory: www.toast.dev
+        run: node ./../toast/toast-node-wrapper/binary-management/installDev.js ./../toast/target/${{matrix.platform}}.tar.gz
+      - name: toast incremental
+        working-directory: www.toast.dev
+        run: npm run build
+      - name: deploy
+        working-directory: www.toast.dev
+        if: github.event.ref == 'refs/heads/main'
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_WWW_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        run: netlify deploy --dir=public --message ${{ github.event.head_commit.url }}
