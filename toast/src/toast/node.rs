@@ -17,7 +17,7 @@ pub fn render_to_html(
     } else {
         npm_bin_dir
     }
-    .join("toast-render.mjs");
+    .join("toast-render");
     let mut cmd = Command::new("node");
     let bin_str = bin
         .to_str()
@@ -54,7 +54,7 @@ pub async fn source_data(
         } else {
             npm_bin_dir
         }
-        .join("toast-source-data.mjs");
+        .join("toast-source-data");
         let mut cmd = Command::new("node");
         let bin_str = bin
             .to_str()
