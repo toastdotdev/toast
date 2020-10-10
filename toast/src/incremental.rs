@@ -190,8 +190,10 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         };
     }
 
+    let event_len: u64 = v.len() as u64;
     let compile_pb = Arc::new(ProgressBar::new_spinner());
     compile_pb.enable_steady_tick(120);
+    compile_pb.set_length(event_len);
     compile_pb.set_style(
         ProgressStyle::default_spinner()
             // For more spinners check out the cli-spinners project:
