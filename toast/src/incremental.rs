@@ -160,8 +160,12 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .iter()
         .map(|(_, output_file)| output_file.dest.clone())
         .collect::<Vec<String>>();
-    let _data_from_user =
-        source_data(&project_root_dir.join("toast.js"), npm_bin_dir.clone()).await;
+    let _data_from_user = source_data(
+        &project_root_dir.join("toast.js"),
+        npm_bin_dir.clone(),
+        toast_module_path.clone(),
+    )
+    .await;
 
     let _maybe_gone = server.cancel();
     let _result = fs::remove_file("/var/tmp/toaster.sock");
@@ -253,6 +257,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         output_dir.into_os_string().into_string().unwrap(),
         list,
         npm_bin_dir,
+        toast_module_path,
     )?;
     render_pb.abandon_with_message("html rendered");
 

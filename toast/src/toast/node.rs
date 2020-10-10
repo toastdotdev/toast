@@ -5,11 +5,13 @@ use std::process::Command;
 use tracing::instrument;
 
 #[instrument]
+#[cfg(not(windows))]
 pub fn render_to_html(
     dir_of_input_files: String,
     output_dir: String,
     filepaths: Vec<String>,
     npm_bin_dir: PathBuf,
+    toast_module_path: Option<PathBuf>,
 ) -> Result<()> {
     let bin = npm_bin_dir.join("toast-render");
     let mut cmd = Command::new("node");
@@ -34,7 +36,46 @@ pub fn render_to_html(
 }
 
 #[instrument]
-pub async fn source_data(toast_js_file: &PathBuf, npm_bin_dir: PathBuf) -> Result<()> {
+#[cfg(windows)]
+pub fn render_to_html(
+    dir_of_input_files: String,
+    output_dir: String,
+    filepaths: Vec<String>,
+    npm_bin_dir: PathBuf,
+    toast_module_path: Option<PathBuf>,
+) -> Result<()> {
+    let bin = toast_module_path.unwrap().join("toast-render.mjs");
+    let mut cmd = Command::new("cmd");
+    let bin_str = bin
+        .to_str()
+        .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
+    cmd.args(&[
+        "/c",
+        "node.cmd",
+        // "--no-warnings",
+        "--loader",
+        "toast/src/loader.mjs",
+        bin_str,
+        &dir_of_input_files,
+        &output_dir,
+    ]);
+    for arg in filepaths {
+        cmd.arg(arg);
+    }
+    let output = cmd.output()?;
+    // TODO: move stdout/stderr around so it's not just dumping to console
+    let _ = std::io::stdout().write_all(&output.stdout);
+    let _ = std::io::stderr().write_all(&output.stderr);
+    Ok(())
+}
+
+#[instrument]
+#[cfg(not(windows))]
+pub async fn source_data(
+    toast_js_file: &PathBuf,
+    npm_bin_dir: PathBuf,
+    toast_module_path: Option<PathBuf>,
+) -> Result<()> {
     // not a guarantee that toast.js will exist when node
     // goes to look for it: just a sanity check to not
     // execute Command if we don't need to
@@ -45,6 +86,44 @@ pub async fn source_data(toast_js_file: &PathBuf, npm_bin_dir: PathBuf) -> Resul
             .to_str()
             .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
         cmd.args(&[
+            // "--no-warnings",
+            "--loader",
+            "toast/src/loader.mjs",
+            bin_str,
+            "/var/tmp/toaster.sock",
+            &toast_js_file
+                .to_str()
+                .ok_or_else(|| eyre!("failed to make toast_js_file into str"))?,
+        ]);
+        let output = cmd.output()?;
+        // TODO: move stdout/stderr around so it's not just dumping to console
+        let _ = std::io::stdout().write_all(&output.stdout);
+        let _ = std::io::stderr().write_all(&output.stderr);
+        Ok(())
+    } else {
+        Ok(())
+    }
+}
+
+#[instrument]
+#[cfg(windows)]
+pub async fn source_data(
+    toast_js_file: &PathBuf,
+    npm_bin_dir: PathBuf,
+    toast_module_path: Option<PathBuf>,
+) -> Result<()> {
+    // not a guarantee that toast.js will exist when node
+    // goes to look for it: just a sanity check to not
+    // execute Command if we don't need to
+    if toast_js_file.exists() {
+        let bin = toast_module_path.unwrap().join("toast-source-data.mjs");
+        let mut cmd = Command::new("cmd");
+        let bin_str = bin
+            .to_str()
+            .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
+        cmd.args(&[
+            "/c",
+            "node.cmd",
             // "--no-warnings",
             "--loader",
             "toast/src/loader.mjs",
