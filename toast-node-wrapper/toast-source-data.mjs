@@ -10,7 +10,7 @@ async function main() {
   const res = await got(`http://unix:${socketPath}:/`);
   if (res.body === "ready" && toast.sourceData) {
     try {
-      await toast.sourceData({ createPage, setData });
+      await toast.sourceData({ setDataForSlug });
     } catch (e) {
       console.error(e);
     }
@@ -20,16 +20,19 @@ async function main() {
 }
 
 // pageArgs is `{module: JSModuleAsString, slug: String, data: {}}`
-const createPage = async (pageArgs) => {
-  await got.post(`http://unix:${socketPath}:/create-page`, {
-    json: pageArgs,
-  });
-  return { ok: true };
-};
-
-// pageArgs is `{slug: String, data: {}}`
-const setData = async (pageArgs) => {
-  await got.post(`http://unix:${socketPath}:/set-data`, {
+const setDataForSlug = async (pageArgs) => {
+  let args = pagesArgs;
+  if (args.component === null) {
+    args.component = {
+      mode: "no-module",
+    };
+  }
+  if (args.wrapper === null) {
+    args.wrapper = {
+      mode: "no-module",
+    };
+  }
+  await got.post(`http://unix:${socketPath}:/set-data-for-slug`, {
     json: pageArgs,
   });
   return { ok: true };
