@@ -50,14 +50,14 @@ impl SetDataForSlug {
         }
     }
     pub fn slug_as_relative_filepath(&self) -> PathBuf {
-        let s = self.slug.trim_start_matches('/');
-        let mut buf = PathBuf::from(s);
+        let s = if self.slug.ends_with('/') {
+            let t = self.slug.trim_start_matches('/');
+            format!("{}index", t)
+        } else {
+            self.slug.trim_start_matches('/').to_string()
+        };
 
-        if s.ends_with('/') {
-            buf = buf.join("index");
-        }
-
-        buf
+        PathBuf::from(s)
     }
 }
 
@@ -168,6 +168,18 @@ mod tests {
             set.slug_as_relative_filepath(),
             PathBuf::from("something/here/index")
         );
+        Ok(())
+    }
+    #[test]
+    fn test_file_paths_from_root_slug() -> Result<()> {
+        let set = SetDataForSlug {
+            slug: String::from("/"),
+            component: None,
+            data: None,
+            wrapper: None,
+        };
+
+        assert_eq!(set.slug_as_relative_filepath(), PathBuf::from("index"));
         Ok(())
     }
 }

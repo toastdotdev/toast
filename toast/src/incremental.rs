@@ -95,7 +95,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     });
     let sock = format!("http+unix://{}", "/var/tmp/toaster.sock");
     app.at("/").get(|_| async { Ok("ready") });
-    app.at("/set-data-for-page")
+    app.at("/set-data-for-slug")
         .post(|mut req: tide::Request<TideSharedState>| async move {
             let mut data: SetDataForSlug = req.body_json().await?;
             req.state()
@@ -139,8 +139,8 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     let _result = fs::remove_file("/var/tmp/toaster.sock");
     create_pages_pb.abandon_with_message("pages created");
 
-    let v: Vec<Event> = rx.try_iter().collect();
-    let event_len: u64 = v.len() as u64;
+    let set_data_events: Vec<Event> = rx.try_iter().collect();
+    let event_len: u64 = set_data_events.len() as u64;
     let compile_pb = Arc::new(ProgressBar::new_spinner());
     compile_pb.enable_steady_tick(120);
     compile_pb.set_length(event_len);
@@ -154,14 +154,14 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     compile_pb.set_message("compiling...");
     compile_pb.tick();
 
-    for x in v.clone() {
+    for x in set_data_events.clone() {
         match x {
             Event::Set(set) => {
                 compile_pb.inc(1);
                 compile_pb.set_message(set.slug.as_str());
                 let slug_filepath = set.slug_as_relative_filepath();
                 let mut output_path_js = set.slug_as_relative_filepath();
-                output_path_js.set_extension(".js");
+                output_path_js.set_extension("js");
 
                 // if there is a component, set the source in the incremental cache
                 // if it's a filepath, we need to figure out how to handle it. I think
@@ -230,12 +230,15 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     }
     compile_pb.abandon_with_message("remote sources compiled");
 
-    let remote_file_list: Vec<String> = v
+    let remote_file_list: Vec<String> = set_data_events
         .iter()
-        .map(|Event::Set(set)| {
-            let mut js_filepath = set.slug_as_relative_filepath();
-            js_filepath.set_extension("js");
-            js_filepath.display().to_string()
+        .filter_map(|Event::Set(set)| match set.component {
+            None => None,
+            Some(_) => {
+                let mut js_filepath = set.slug_as_relative_filepath();
+                js_filepath.set_extension("js");
+                Some(js_filepath.display().to_string())
+            }
         })
         .collect();
     let mut list: Vec<String> = file_list
