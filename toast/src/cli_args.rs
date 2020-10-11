@@ -23,11 +23,10 @@ pub enum Toast {
     #[structopt(name = "incremental")]
     Incremental {
         /// Activate debug mode
-        // short and long flags (-d, --debug) will be deduced from the field's name
         #[structopt(short, long)]
         debug: bool,
 
-        /// Input directory 
+        /// The directory of your Toast site
         #[structopt(parse(try_from_str = abspath))]
         input_dir: PathBuf,
 

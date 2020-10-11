@@ -9,7 +9,7 @@ use color_eyre::eyre::{eyre, Result, WrapErr};
 use crossbeam::{unbounded, Sender};
 use fs_extra::dir::{copy, CopyOptions};
 use indicatif::{ProgressBar, ProgressStyle};
-use serde::{Deserialize, Serialize};
+use serde_json::value::Value;
 use std::sync::Arc;
 use std::{
     collections::HashMap,
@@ -20,7 +20,10 @@ use std::{
 use tracing::instrument;
 use walkdir::WalkDir;
 
-use crate::toast::cache::Cache;
+use crate::toast::{
+    cache::Cache,
+    internal_api::{ModuleSpec, SetDataForSlug},
+};
 
 #[derive(Debug)]
 pub struct IncrementalOpts<'a> {
@@ -29,18 +32,6 @@ pub struct IncrementalOpts<'a> {
     pub output_dir: PathBuf,
     pub npm_bin_dir: PathBuf,
     pub import_map: ImportMap,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct CreatePage {
-    module: String,
-    slug: String,
-    data: serde_json::Value,
-}
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct SetData {
-    slug: String,
-    data: serde_json::Value,
 }
 
 #[derive(Debug)]
@@ -56,7 +47,7 @@ struct TideSharedState {
 }
 #[derive(Debug, Clone)]
 enum Event {
-    CreatePage(CreatePage),
+    Set(SetDataForSlug),
 }
 
 #[instrument]
@@ -104,33 +95,17 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     });
     let sock = format!("http+unix://{}", "/var/tmp/toaster.sock");
     app.at("/").get(|_| async { Ok("ready") });
-    app.at("/create-page")
+    app.at("/set-data-for-slug")
         .post(|mut req: tide::Request<TideSharedState>| async move {
-            let create_page: CreatePage = req.body_json().await?;
+            let mut data: SetDataForSlug = req.body_json().await?;
             req.state()
                 .create_page_progress_bar
-                .set_message(create_page.slug.as_str());
+                .set_message(data.slug.as_str());
             req.state().create_page_progress_bar.inc(1);
 
-            req.state().tx.send(Event::CreatePage(create_page))?;
-            // println!("{:?}", create_page);
-            Ok("ok")
-        });
-    app.at("/set-data")
-        .post(|mut req: tide::Request<TideSharedState>| async move {
-            let mut set_data: SetData = req.body_json().await?;
-            if set_data.slug.ends_with('/') {
-                set_data.slug = format!("{}index", set_data.slug);
-            }
-            let mut json_path = req
-                .state()
-                .output_dir
-                .join(set_data.slug.trim_start_matches('/'));
+            data.normalize();
 
-            json_path.set_extension("json");
-            async_std::fs::create_dir_all(&json_path.parent().unwrap()).await?;
-            async_std::fs::write(json_path, set_data.data.to_string()).await?;
-            // &req.state().tx.send(Event::SetData(set_data))?;
+            req.state().tx.send(Event::Set(data))?;
             Ok("ok")
         });
     app.at("/terminate").get(|_| async {
@@ -164,26 +139,8 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     let _result = fs::remove_file("/var/tmp/toaster.sock");
     create_pages_pb.abandon_with_message("pages created");
 
-    let v: Vec<Event> = rx.try_iter().collect();
-    for x in v.clone() {
-        match x {
-            Event::CreatePage(CreatePage { module, data, slug }) => {
-                cache.set_source(
-                    &slug,
-                    Source {
-                        source: module,
-                        kind: SourceKind::Raw,
-                    },
-                );
-                let mut json_path = output_dir.join(slug);
-                json_path.set_extension("json");
-                std::fs::create_dir_all(&json_path.parent().unwrap())?;
-                fs::write(json_path, data.to_string())?
-            }
-        };
-    }
-
-    let event_len: u64 = v.len() as u64;
+    let set_data_events: Vec<Event> = rx.try_iter().collect();
+    let event_len: u64 = set_data_events.len() as u64;
     let compile_pb = Arc::new(ProgressBar::new_spinner());
     compile_pb.enable_steady_tick(120);
     compile_pb.set_length(event_len);
@@ -196,34 +153,93 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     );
     compile_pb.set_message("compiling...");
     compile_pb.tick();
-    for x in v.clone() {
-        match x {
-            Event::CreatePage(CreatePage { slug, .. }) => {
-                compile_pb.inc(1);
-                compile_pb.set_message(slug.as_str());
-                compile_js(
-                    &slug,
-                    &OutputFile {
-                        dest: format!("{}.js", slug.trim_matches('/')),
-                    },
-                    IncrementalOpts {
-                        debug,
-                        project_root_dir: &project_root_dir,
-                        output_dir: output_dir.clone(),
-                        npm_bin_dir: npm_bin_dir.clone(),
-                        import_map: import_map.clone(),
-                    },
-                    &mut cache,
-                    &tmp_dir,
-                )?;
-            }
-        }
-    }
-    compile_pb.abandon_with_message("sources compiled");
 
-    let remote_file_list: Vec<String> = v
+    for x in set_data_events.clone() {
+        match x {
+            Event::Set(set) => {
+                compile_pb.inc(1);
+                compile_pb.set_message(set.slug.as_str());
+                let slug_filepath = set.slug_as_relative_filepath();
+                let mut output_path_js = set.slug_as_relative_filepath();
+                output_path_js.set_extension("js");
+
+                // if there is a component, set the source in the incremental cache
+                // if it's a filepath, we need to figure out how to handle it. I think
+                // that we just need to make sure the filepaths are relative to the project
+                // root so that the incremental cache ids for the sources line up when
+                // we go to render it out or whatnot
+                match &set.component {
+                    None => {}
+                    Some(ModuleSpec::NoModule) => {
+                        panic!("no-module is not implemented for components yet")
+                    }
+                    Some(ModuleSpec::File { path: _ }) => {
+                        panic!("Filepaths are not implemented yet")
+                    }
+                    Some(ModuleSpec::Source { code }) => {
+                        cache.set_source(
+                            &set.slug,
+                            Source {
+                                source: code.to_string(),
+                                kind: SourceKind::Raw,
+                            },
+                        );
+                        compile_js(
+                            &set.slug,
+                            &OutputFile {
+                                dest: output_path_js.display().to_string(),
+                            },
+                            IncrementalOpts {
+                                debug,
+                                project_root_dir: &project_root_dir,
+                                output_dir: output_dir.clone(),
+                                npm_bin_dir: npm_bin_dir.clone(),
+                                import_map: import_map.clone(),
+                            },
+                            &mut cache,
+                            &tmp_dir,
+                        )?;
+                    }
+                }
+                match &set.data {
+                    Some(Value::Null) => {
+                        // if null, do nothing for now. In the future null
+                        // will cause us to overlay a tombstone on this layer
+                        // similar to an overlay filesystem, resulting in no data
+                        // for the page.
+                    }
+                    Some(v) => {
+                        // we write the files out to disk here today,
+                        // we should probably put them in the incremental cache first
+                        // so that files can depend on them via derived queries
+                        let mut json_path = output_dir.join(slug_filepath);
+                        json_path.set_extension("json");
+                        std::fs::create_dir_all(&json_path.parent().unwrap())?;
+                        fs::write(json_path, v.to_string())?
+                    }
+                    None => {}
+                }
+                match &set.wrapper {
+                    Some(_) => {
+                        panic!("set.wrapper is not implemented yet");
+                    }
+                    None => {}
+                }
+            }
+        };
+    }
+    compile_pb.abandon_with_message("remote sources compiled");
+
+    let remote_file_list: Vec<String> = set_data_events
         .iter()
-        .map(|Event::CreatePage(CreatePage { slug, .. })| format!("{}.js", slug.trim_matches('/')))
+        .filter_map(|Event::Set(set)| match set.component {
+            None => None,
+            Some(_) => {
+                let mut js_filepath = set.slug_as_relative_filepath();
+                js_filepath.set_extension("js");
+                Some(js_filepath.display().to_string())
+            }
+        })
         .collect();
     let mut list: Vec<String> = file_list
         .clone()
