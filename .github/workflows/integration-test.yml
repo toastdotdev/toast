@@ -57,7 +57,7 @@ jobs:
         working-directory: www.toast.dev
         run: cp -r ./../toast/toast-node-wrapper ./node_modules/toast
         shell: bash
-      - name: posinstall on toast.dev
+      - name: postinstall on toast.dev
         working-directory: www.toast.dev
         run: npm run postinstall
       - name: npm install in toast node wrapper
