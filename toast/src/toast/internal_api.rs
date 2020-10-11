@@ -35,18 +35,14 @@ impl SetDataForSlug {
         if !self.slug.starts_with('/') {
             self.slug = "/".to_owned() + &self.slug;
         }
-        match &self.data {
-            // object with 0 keys is an empty object and shouldn't result
-            // in the creation of a file on disk, and shouldn't blow away
-            // any other data
-            Some(Value::Object(v)) => {
-                if v.len() > 0 {
-                    // Some(Value::Object(v));
-                } else {
-                    self.data = None;
-                }
+
+        // object with 0 keys is an empty object and shouldn't result
+        // in the creation of a file on disk, and shouldn't blow away
+        // any other data
+        if let Some(Value::Object(v)) = &self.data {
+            if v.is_empty() {
+                self.data = None
             }
-            _ => {}
         }
     }
     pub fn slug_as_relative_filepath(&self) -> PathBuf {
