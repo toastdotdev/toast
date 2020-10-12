@@ -9,7 +9,7 @@ use std::{
 use tracing::instrument;
 
 #[instrument]
-#[cfg(not(windows))]
+#[cfg(not(target_os = "windows"))]
 pub fn render_to_html(
     dir_of_input_files: String,
     output_dir: String,
@@ -39,7 +39,7 @@ pub fn render_to_html(
 }
 
 #[instrument]
-#[cfg(windows)]
+#[cfg(target_os = "windows")]
 pub fn render_to_html(
     dir_of_input_files: String,
     output_dir: String,
@@ -74,7 +74,7 @@ pub fn render_to_html(
 }
 
 #[instrument]
-#[cfg(not(windows))]
+#[cfg(not(target_os = "windows"))]
 pub async fn source_data(
     toast_js_file: &PathBuf,
     npm_bin_dir: PathBuf,
@@ -113,7 +113,7 @@ pub async fn source_data(
 }
 
 #[instrument]
-#[cfg(windows)]
+#[cfg(target_os = "windows")]
 pub async fn source_data(
     toast_js_file: &PathBuf,
     npm_bin_dir: PathBuf,
