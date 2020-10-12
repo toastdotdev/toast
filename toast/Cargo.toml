@@ -44,6 +44,7 @@ which = "4.0.2"
 fs_extra = "1.2.0"
 indicatif = "0.15.0"
 dunce = "1.0.1"
+duct = "0.13.4"
 
 [dependencies.tracing]
 version = "0.1.19"
