@@ -253,7 +253,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     let mut list: Vec<String> = file_list
         .clone()
         .iter()
-        .filter(|f| f.starts_with("src/pages") || f.starts_with(r"src\\pages"))
+        .filter(|f| f.starts_with("src/pages") || f.starts_with(r"src\pages"))
         .cloned()
         .collect();
     list.extend(remote_file_list);
