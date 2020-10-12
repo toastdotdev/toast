@@ -33,7 +33,7 @@ pub fn render_to_html(
     ];
     args.extend(filepaths.iter().cloned());
     let output = cmd("node", args).stderr_to_stdout();
-    run_cmd("sourceData", output, active_pb)?;
+    run_cmd("renderHTML", output, active_pb)?;
 
     Ok(())
 }
@@ -61,11 +61,14 @@ pub fn render_to_html(
         "toast/src/loader.mjs".to_owned(),
         bin_str.to_owned(),
         dir_of_input_files,
-        output_dir,
+        dunce::canonicalize(output_dir)
+            .unwrap()
+            .display()
+            .to_string(),
     ];
     args.extend(filepaths.iter().cloned());
     let output = cmd("cmd", args).stderr_to_stdout();
-    run_cmd("sourceData", output, active_pb)?;
+    run_cmd("renderHTML", output, active_pb)?;
 
     Ok(())
 }
