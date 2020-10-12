@@ -2,7 +2,7 @@ use color_eyre::eyre::{eyre, Result};
 use duct::cmd;
 use indicatif::ProgressBar;
 use std::{
-    io::{prelude::*, BufReader, ErrorKind},
+    io::{prelude::*, BufReader},
     path::PathBuf,
     sync::Arc,
 };
@@ -118,19 +118,19 @@ fn run_cmd(
             }
             Some(output_status) => {
                 if output_status.status.success() {
-                    return Ok(());
+                    Ok(())
                 } else if let Some(code) = output_status.status.code() {
-                    return Err(eyre!(
+                    Err(eyre!(
                         "{} node process exited with code {}",
                         subcommand_name,
                         code
-                    ));
+                    ))
                 } else {
                     panic!("Should never reach here: 155");
                 }
             }
         }
     } else {
-        return Err(eyre!("{} node process didn't start", subcommand_name));
-    };
+        Err(eyre!("{} node process didn't start", subcommand_name))
+    }
 }
