@@ -9,11 +9,7 @@ async function main() {
   let toast = await import(toastFilePath);
   const res = await got(`http://unix:${socketPath}:/`);
   if (res.body === "ready" && toast.sourceData) {
-    try {
-      await toast.sourceData({ setDataForSlug });
-    } catch (e) {
-      console.error(e);
-    }
+    await toast.sourceData({ setDataForSlug });
   } else if (res.body !== "ready") {
     throw new Error("Unable to get ready to run toast.sourceData");
   }

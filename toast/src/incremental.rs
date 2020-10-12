@@ -132,12 +132,13 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .iter()
         .map(|(_, output_file)| output_file.dest.clone())
         .collect::<Vec<String>>();
-    let _data_from_user = source_data(
+    let data_from_user = source_data(
         &project_root_dir.join("toast.js"),
         npm_bin_dir.clone(),
         create_pages_pb.clone(),
     )
-    .await;
+    .await?;
+    println!("{:#?}", data_from_user);
 
     let _maybe_gone = server.cancel();
     let _result = fs::remove_file("/var/tmp/toaster.sock");
