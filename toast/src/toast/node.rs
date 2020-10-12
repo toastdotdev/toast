@@ -21,8 +21,8 @@ pub fn render_to_html(
         .to_str()
         .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
     let mut args: Vec<String> = vec![
-        "--unhandled-rejections",
-        "strict",
+        "--unhandled-rejections".to_owned(),
+        "strict".to_owned(),
         "--loader".to_owned(),
         "toast/src/loader.mjs".to_owned(),
         bin_str.to_owned(),
