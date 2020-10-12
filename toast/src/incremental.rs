@@ -135,7 +135,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .iter()
         .map(|(_, output_file)| output_file.dest.clone())
         .collect::<Vec<String>>();
-    let data_from_user = source_data(
+    let _data_from_user = source_data(
         &project_root_dir.join("toast.js"),
         npm_bin_dir.clone(),
         toast_module_path.clone(),
@@ -253,7 +253,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     let mut list: Vec<String> = file_list
         .clone()
         .iter()
-        .filter(|f| f.starts_with("src/pages"))
+        .filter(|f| f.starts_with("src/pages") || f.starts_with(r"src\\pages"))
         .cloned()
         .collect();
     list.extend(remote_file_list);
