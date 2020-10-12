@@ -138,7 +138,6 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         create_pages_pb.clone(),
     )
     .await?;
-    println!("{:#?}", data_from_user);
 
     let _maybe_gone = server.cancel();
     let _result = fs::remove_file("/var/tmp/toaster.sock");
