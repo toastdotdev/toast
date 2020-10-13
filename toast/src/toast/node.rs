@@ -54,7 +54,7 @@ pub fn render_to_html(
         .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
     let mut args: Vec<String> = vec![
         "/c".to_owned(),
-        "node.cmd".to_owned(),
+        "node".to_owned(),
         "--unhandled-rejections".to_owned(),
         "strict".to_owned(),
         "--loader".to_owned(),
@@ -131,7 +131,7 @@ pub async fn source_data(
         let output = cmd!(
             "cmd",
             "/c",
-            "node.cmd",
+            "node",
             "--unhandled-rejections",
             "strict",
             "--loader",
