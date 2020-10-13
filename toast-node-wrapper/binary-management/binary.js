@@ -60,6 +60,8 @@ class Binary {
     this.installDirectory = data.installDirectory || envPaths(this.name).config;
     this.binaryDirectory = -1;
     this.binaryPath = -1;
+    this.binaryHash = data.binaryHash;
+    this.devBinaryTar = data.devBinaryTar;
   }
 
   _getInstallDirectory() {
@@ -90,8 +92,10 @@ class Binary {
   }
 
   async install() {
-    if (binaryHash === "<binaryhash>" && !devBinaryTar) {
-      console.log(`No binaries referenced in package.json. Skipping install.`);
+    if (this.binaryHash === "<binaryhash>" && !this.devBinaryTar) {
+      console.log(
+        `No binaries referenced in toast package.json. Skipping install.`
+      );
       return;
     }
 
@@ -173,15 +177,6 @@ const packageJSON = path.join(
   "package.json"
 );
 
-let {
-  version,
-  name,
-  repository,
-  binaryHash,
-  devBinaryTar,
-  ...etc
-} = JSON.parse(readFileSync(packageJSON));
-
 const supportedPlatforms = [
   {
     TYPE: "Windows_NT",
@@ -223,13 +218,23 @@ const getPlatform = () => {
 
 const getBinary = () => {
   const platform = getPlatform();
+
+  const {
+    version,
+    name,
+    repository,
+    binaryHash,
+    devBinaryTar,
+    ...etc
+  } = JSON.parse(readFileSync(packageJSON));
+
   // the url for this binary is constructed from values in `package.json`
   // https://github.com/toastdotdev/toast/releases/download/v1.0.0/toast-example-v1.0.0-x86_64-apple-darwin.tar.gz
   // const url = `${repository.url}/releases/download/v${version}/${name}-v${version}-${platform}.tar.gz`;
   const url = devBinaryTar
     ? devBinaryTar
     : `https://github.com/toastdotdev/toast/releases/download/binaries-ci-${binaryHash}/${platform}.tar.gz`;
-  return new Binary(url, { name: "toast" });
+  return new Binary(url, { name: "toast", binaryHash, devBinaryTar });
 };
 
 export const run = () => {
@@ -247,7 +252,6 @@ export const setLocalBinaryPath = (localPath) => {
   writeFileSync(packageJSON, JSON.stringify(packageJSONContent, null, 2));
   // assign to the global var so follow-up install()
   // will use the correct binary
-  devBinaryTar = packageJSONContent.devBinaryTar;
 };
 
 export const install = () => {
