@@ -55,7 +55,7 @@ jobs:
         run: npm ci
       - name: copy and replace toast in node_modules
         working-directory: www.toast.dev
-        run: cp -r ./../toast/toast-node-wrapper ./node_modules/toast
+        run: cp -rf ./../toast/toast-node-wrapper/* ./node_modules/toast
         shell: bash
       - name: postinstall on toast.dev
         working-directory: www.toast.dev
