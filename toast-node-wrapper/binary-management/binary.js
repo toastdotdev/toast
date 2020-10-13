@@ -23,6 +23,7 @@ const error = (msg, e) => {
 // we need to add versioning and local fetching
 class Binary {
   constructor(url, data) {
+    let errors = [];
     if (typeof url !== "string") {
       errors.push("url must be a string");
     } else {
@@ -32,7 +33,6 @@ class Binary {
         errors.push(e);
       }
     }
-    let errors = [];
     if (data.name && typeof data.name !== "string") {
       errors.push("name must be a string");
     }
