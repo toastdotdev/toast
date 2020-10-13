@@ -167,7 +167,7 @@ const packageJSON = path.join(
   "package.json"
 );
 
-const {
+let {
   version,
   name,
   repository,
@@ -239,6 +239,9 @@ export const setLocalBinaryPath = (localPath) => {
   let packageJSONContent = JSON.parse(readFileSync(packageJSON));
   packageJSONContent.devBinaryTar = path.resolve(localPath);
   writeFileSync(packageJSON, JSON.stringify(packageJSONContent, null, 2));
+  // assign to the global var so follow-up install()
+  // will use the correct binary
+  devBinaryTar = packageJSONContent.devBinaryTar;
 };
 
 export const install = () => {
