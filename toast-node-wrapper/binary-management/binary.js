@@ -84,7 +84,10 @@ class Binary {
   }
 
   async install() {
-    if (binaryHash === "<binaryhash>" && !devBinaryTar) return;
+    if (binaryHash === "<binaryhash>" && !devBinaryTar) {
+      console.log(`No binaries referenced in package.json. Skipping install.`);
+      return;
+    }
 
     const dir = this._getInstallDirectory();
     if (!existsSync(dir)) {
