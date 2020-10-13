@@ -26,6 +26,12 @@ class Binary {
     let errors = [];
     if (typeof url !== "string") {
       errors.push("url must be a string");
+    } else if (!url.startsWith("http")) {
+      try {
+        existsSync(url);
+      } catch (e) {
+        errors.push(e);
+      }
     } else {
       try {
         new URL(url);
