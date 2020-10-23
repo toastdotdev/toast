@@ -132,7 +132,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .iter()
         .map(|(_, output_file)| output_file.dest.clone())
         .collect::<Vec<String>>();
-    let data_from_user = source_data(
+    let _data_from_user = source_data(
         &project_root_dir.join("toast.js"),
         npm_bin_dir.clone(),
         create_pages_pb.clone(),
