@@ -16,7 +16,8 @@
   "binaryHash": "<binaryhash>",
   "scripts": {
     "postinstall": "node ./binary-management/install.js",
-    "preuninstall": "node ./binary-management/uninstall.js"
+    "preuninstall": "node ./binary-management/uninstall.js",
+    "printBinaryPath": "node ./binary-management/printBinaryPath.js"
   },
   "files": [
     "toast",

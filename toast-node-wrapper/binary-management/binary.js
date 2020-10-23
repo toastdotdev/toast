@@ -239,3 +239,8 @@ export const uninstall = () => {
   const binary = getBinary();
   binary.uninstall();
 };
+
+export const printBinaryPath = () => {
+  const binary = getBinary();
+  console.log(binary._getBinaryPath())
+}
