@@ -93,6 +93,10 @@ Copy-Item 'target\debug\toast.exe' $(node .\toast-node-wrapper\binary-management
 Once you've installed the binary, you should be able to run Toast. You can build the `test-toast-site` by running 
 `yarn workspace test-toast-site toast incremental . ` This site is pretty bare-bones, and only has one page to generate. But it can at least tell you that your changes are working.  
 
+
+### Reverting to using a released binary
+When you've finished working on and testing your local binary, you will probably want to revert to using a release binary. To do that, you'll want to delete the binary from the path printed when you run `yarn workspace toast printBinaryPath`. You'll then want to delete your node_modules and reinstall them. This should replace
+
 ## What counts as a contribution?
 
 There are plenty of [open issues][issues] that may fit your skills and expertise. We also highly value documentation changes, user feedback on issues, and more. Code commits are not the only way to contribute. You may also wish to check out the [www.toast.dev issues](https://github.com/toastdotdev/www.toast.dev/issues).
