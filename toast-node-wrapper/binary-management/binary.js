@@ -242,5 +242,10 @@ export const uninstall = () => {
 
 export const printBinaryPath = () => {
   const binary = getBinary();
-  console.log(path.join(binary.installDirectory, "bin", "toast"))
+  console.log(path.join(binary._getInstallDirectory(), "bin", "toast"))
+}
+
+export const printInstallDirectory = () => {
+  const binary = getBinary();
+  console.log(path.join(binary._getInstallDirectory(), "bin"))
 }
