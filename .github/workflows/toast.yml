@@ -193,3 +193,8 @@ jobs:
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+  trigger-www-build:
+    needs: [do-npm-release]
+    name: Trigger WWW site build to update docs
+    run: |
+      curl -X POST -d {} https://api.netlify.com/build_hooks/5f94b31bccb688f78b0a2576
