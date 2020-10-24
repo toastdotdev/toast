@@ -95,7 +95,7 @@ Once you've installed the binary, you should be able to run Toast. You can build
 
 
 ### Reverting to using a released binary
-When you've finished working on and testing your local binary, you will probably want to revert to using a release binary. To do that, you'll want to delete the binary from the path printed when you run `yarn workspace toast printBinaryPath`. You'll then want to delete your node_modules and reinstall them. This should replace
+When you've finished working on and testing your local binary, you will probably want to revert to using a release binary. To do that, you'll want to delete the binary from the path printed when you run `yarn workspace toast printBinaryPath`. You'll then want to delete your node_modules and reinstall them. This should replace your binary with the version that matches your Toast version. 
 
 ## What counts as a contribution?
 
