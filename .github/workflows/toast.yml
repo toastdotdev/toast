@@ -196,6 +196,7 @@ jobs:
   trigger-www-build:
     needs: [do-npm-release]
     name: Update www.toast.dev docs
+    runs-on: ubuntu-latest
     steps:
       - name: trigger www netlify build
         run: |
