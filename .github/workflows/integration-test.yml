@@ -53,6 +53,7 @@ jobs:
       - name: starters — Install dependencies
         run: |
           for D in `fd starters -t d -d 1`
+          do
             cd $D;
             node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));';
             yarn;
@@ -64,6 +65,7 @@ jobs:
       - name: build starters
         run: |
           for D in `fd starters -t d -d 1`
+          do
             cd $D;
             TOAST_BINARY="$PWD/../../toast/target/debug/$BINARY_NAME" yarn build;
             cd -;
