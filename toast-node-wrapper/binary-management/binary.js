@@ -98,24 +98,19 @@ export function uninstall(
   }
 }
 
-const getBinaryUrlForPlatform = (
-  { binaryHash = binaryHash, platform = getPlatform() } = {
-    binaryHash: binaryHash,
-    platform: getPlatform(),
-  }
-) => {
+const getBinaryUrlForPlatform = ({ binaryHash: bHash, platform } = {}) => {
+  let hash = bHash || binaryHash;
+  let plat = platform || getPlatform();
   // the url for this binary is constructed from values in `package.json`
   // https://github.com/toastdotdev/toast/releases/download/v1.0.0/toast-example-v1.0.0-x86_64-apple-darwin.tar.gz
   // const url = `${repository.url}/releases/download/v${version}/${name}-v${version}-${platform}.tar.gz`;
-  return `https://github.com/toastdotdev/toast/releases/download/binaries-ci-${binaryHash}/${platform}.tar.gz`;
+  return `https://github.com/toastdotdev/toast/releases/download/binaries-ci-${hash}/${plat}.tar.gz`;
 };
 
-export async function installFromUrl(
-  { url = getBinaryUrlForPlatform(), binaryDirectory = _binaryDirectory } = {
-    url: getBinaryUrlForPlatform(),
-    binaryDirectory: _binaryDirectory,
-  }
-) {
+export async function installFromUrl({ url: u, binaryDirectory: bDir } = {}) {
+  let binaryDirectory = bDir || _binaryDirectory;
+  const url = u || getBinaryUrlForPlatform();
+
   if (existsSync(binaryDirectory)) {
     rimraf.sync(binaryDirectory);
   }
