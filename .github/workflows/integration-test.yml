@@ -52,7 +52,7 @@ jobs:
           do
             cd $D;
             echo $D;
-            node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
+            node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
             cat package.json;
             echo "preinstall"
             npm i;
@@ -63,7 +63,6 @@ jobs:
           done
         shell: bash
         env:
-          NEW_TOAST_VERSION: ../../toast/toast-node-wrapper
           TOAST_BINARY: ../../toast/target/debug/toast
       # - name: deploy
       #   working-directory: www.toast.dev
