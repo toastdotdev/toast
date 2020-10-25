@@ -29,10 +29,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: toast
-      - uses: actions/checkout@v2
-        with:
-          repository: toastdotdev/starters
-          path: starters
       - name: Install nightly toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -42,33 +38,45 @@ jobs:
         with:
           node-version: "14"
           check-latest: true
-      - name: Run cargo build
-        working-directory: toast
-        run: cargo build
-      - name: Install fd
+      # - name: Run cargo build
+      #   working-directory: toast
+      #   run: cargo build
+      # - name: Install fd
+      #   run: |
+      #     cargo install fd-find
+      - name: starter
         run: |
-          cargo install fd-find
-      - name: replace toast dep with local toast-node-wrapper
-        working-directory: starters
-        run: |
-          for D in `fd . -t d -d 1`
-          do
-            cd $D;
-            echo $D;
-            node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
-            cat package.json;
-            ls -R;
-            echo "\npreinstall\n"
-            npm install;
-            echo "\npost npm i\n"
-            npm run build;
-            echo "post-build"
-            ls -R public;
-            cd -;
-          done
+          npx create-toast default
+          cd default
+          node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; delete json.scripts.postinstall; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
+          npm i
+          ls -R
+          npm run breadbox --dest public/web_modules
+          npm run build
         shell: bash
         env:
           TOAST_PREVENT_INSTALL: true
+      # - name: replace toast dep with local toast-node-wrapper
+      #   working-directory: starters
+      #   run: |
+      #     for D in `fd . -t d -d 1`
+      #     do
+      #       cd $D;
+      #       echo $D;
+      #       node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
+      #       cat package.json;
+      #       ls -R;
+      #       echo "\npreinstall\n"
+      #       npm install;
+      #       echo "\npost npm i\n"
+      #       npm run build;
+      #       echo "post-build"
+      #       ls -R public;
+      #       cd -;
+      #     done
+      #   shell: bash
+      #   env:
+      #     TOAST_PREVENT_INSTALL: true
       # - name: deploy
       #   working-directory: www.toast.dev
       #   if: github.event.ref == 'refs/heads/main'
