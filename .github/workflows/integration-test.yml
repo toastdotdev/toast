@@ -50,8 +50,7 @@ jobs:
           cd default
           node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
           yarn
-          yarn breadbox --dest public/web_modules
-          TOAST_BINARY=$("$PWD/../toast/target/debug/toast") yarn build
+          TOAST_BINARY="$PWD/../toast/target/debug/toast" yarn build
         shell: bash
         env:
           TOAST_PREVENT_INSTALL: true
