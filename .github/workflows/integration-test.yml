@@ -49,7 +49,7 @@ jobs:
         working-directory: www.toast.dev
         run: |
           echo $NEW_TOAST_VERSION
-          node -e 'const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; require('fs').writeFileSync("./package.json", JSON.stringify(json, null, 2));'
+          node -e 'const fs = require('fs'); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
           cat package.json
         shell: bash
         env:
