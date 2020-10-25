@@ -50,7 +50,8 @@ jobs:
           cd default
           node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; delete json.scripts.postinstall; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
           npm i
-          ls -R
+          ls -R node_modules/toast
+          ls -R node_modules/preact
           npm run breadbox --dest public/web_modules
           npm run build
         shell: bash
