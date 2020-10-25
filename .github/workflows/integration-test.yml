@@ -50,8 +50,6 @@ jobs:
           cd default
           node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; delete json.scripts.postinstall; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
           yarn
-          ls -R node_modules/toast
-          ls -R node_modules/preact
           yarn breadbox --dest public/web_modules
           yarn build
         shell: bash
