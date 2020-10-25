@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
-import { install } from "./binary.js";
+import { installFromUrl } from "./binary.js";
 
-install();
+if (process.env.TOAST_PREVENT_INSTALL) {
+  console.log(
+    "Toast binary install from url prevented by env var TOAST_PREVENT_INSTALL"
+  );
+} else {
+  installFromUrl({});
+}
