@@ -47,7 +47,7 @@ jobs:
         run: cargo build
       - name: replace toast dep with local toast-node-wrapper
         run: |
-          sed -i "s/^\s*\"toast\":.*$/  \"toast\": \"../toast/toast-node-wrapper\",/" package.json
+          sed -i "s/^\s*\"toast\":.*$/  \"toast\":\"../toast/toast-node-wrapper\",/" package.json
       - name: npm install in toast.dev
         working-directory: www.toast.dev
         run: npm ci
