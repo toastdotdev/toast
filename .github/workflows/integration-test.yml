@@ -51,7 +51,7 @@ jobs:
           sed -i "s/^\s*\"toast\":.*$/  \"toast\": \"..\/toast\/toast-node-wrapper\"/" package.json
       - name: npm install in toast.dev
         working-directory: www.toast.dev
-        run: npm ci
+        run: npm i
         env:
           TOAST_PREVENT_INSTALL: true
       - name: toast incremental
