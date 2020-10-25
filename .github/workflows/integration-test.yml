@@ -51,6 +51,7 @@ jobs:
           echo $NEW_TOAST_VERSION
           sed -i "s/^\s*\"toast\":.*$/  \"toast\": \"$NEW_TOAST_VERSION\"/" package.json
           cat package.json
+        shell: bash
         env:
           NEW_TOAST_VERSION: ../toast/toast-node-wrapper
       - name: npm install in toast.dev
