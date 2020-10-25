@@ -98,10 +98,12 @@ export function uninstall(
   }
 }
 
-const getBinaryUrlForPlatform = ({
-  binaryHash = binaryHash,
-  platform = getPlatform(),
-}) => {
+const getBinaryUrlForPlatform = (
+  { binaryHash = binaryHash, platform = getPlatform() } = {
+    binaryHash: binaryHash,
+    platform: getPlatform(),
+  }
+) => {
   // the url for this binary is constructed from values in `package.json`
   // https://github.com/toastdotdev/toast/releases/download/v1.0.0/toast-example-v1.0.0-x86_64-apple-darwin.tar.gz
   // const url = `${repository.url}/releases/download/v${version}/${name}-v${version}-${platform}.tar.gz`;
