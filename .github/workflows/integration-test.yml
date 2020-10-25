@@ -35,9 +35,13 @@ jobs:
           path: www.toast.dev
       - run: |
           ls
+          echo "--"
           ls ..
+          echo "--"
           ls toast
+          echo "--"
           ls www.toast.dev
+          echo "--"
       - name: Install nightly toolchain
         uses: actions-rs/toolchain@v1
         with:
