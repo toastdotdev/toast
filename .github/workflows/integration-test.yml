@@ -48,8 +48,8 @@ jobs:
       - name: replace toast dep with local toast-node-wrapper
         working-directory: www.toast.dev
         run: |
-          sed -i "s/^\s*\"toast\":.*\(,?\)$/  \"toast\": \"..\/toast\/toast-node-wrapper\"\1/" package.json
-        - name: npm install in toast.dev
+          sed -i "s/^\s*\"toast\":.*(,?)$/  \"toast\": \"..\/toast\/toast-node-wrapper\"\1/" package.json
+      - name: npm install in toast.dev
         working-directory: www.toast.dev
         run: npm ci
         env:
