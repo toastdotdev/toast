@@ -47,7 +47,7 @@ jobs:
         run: cargo build
       - name: Install fd
         run: |
-          sudo apt install fd-find
+          cargo install fd-find
       - name: replace toast dep with local toast-node-wrapper
         working-directory: starters
         run: |
