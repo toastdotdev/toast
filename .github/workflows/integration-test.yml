@@ -57,8 +57,9 @@ jobs:
             echo $D;
             node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
             cat package.json;
-            echo "preinstall"
-            npm i;
+            echo "\npreinstall\n"
+            npm install;
+            echo "\npost npm i\n"
             npm run build;
             echo "post-build"
             ls -R public;
