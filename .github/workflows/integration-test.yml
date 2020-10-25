@@ -58,7 +58,7 @@ jobs:
             node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));';
             yarn;
             cd -;
-          end
+          done
         shell: bash
         env:
           TOAST_PREVENT_INSTALL: true
@@ -69,7 +69,7 @@ jobs:
             cd $D;
             TOAST_BINARY="$PWD/../../toast/target/debug/$BINARY_NAME" yarn build;
             cd -;
-          end
+          done
         shell: bash
         env:
           BINARY_NAME: ${{ matrix.target }}
