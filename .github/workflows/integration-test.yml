@@ -38,23 +38,24 @@ jobs:
         with:
           node-version: "14"
           check-latest: true
-      # - name: Run cargo build
-      #   working-directory: toast
-      #   run: cargo build
-      # - name: Install fd
-      #   run: |
-      #     cargo install fd-find
+      - name: Run cargo build
+        working-directory: toast
+        run: cargo build
+      - name: Install fd
+        run: |
+          cargo install fd-find
       - name: starter
         run: |
           npx create-toast default
           cd default
-          node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; delete json.scripts.postinstall; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
+          node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
           yarn
           yarn breadbox --dest public/web_modules
-          yarn build
+          TOAST_BINARY=$("$PWD/../toast/target/debug/toast") yarn build
         shell: bash
         env:
           TOAST_PREVENT_INSTALL: true
+          # TOAST_BINARY: "../toast/target/debug/toast"
       # - name: replace toast dep with local toast-node-wrapper
       #   working-directory: starters
       #   run: |
