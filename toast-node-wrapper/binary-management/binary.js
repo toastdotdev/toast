@@ -18,156 +18,14 @@ const error = (msg, e) => {
   process.exit(1);
 };
 
-// this was originally a soft fork of binary-install
-// https://github.com/cloudflare/binary-install
-// we need to add versioning and local fetching
-class Binary {
-  constructor(url, data) {
-    if (typeof url !== "string") {
-      errors.push("url must be a string");
-    } else {
-      try {
-        new URL(url);
-      } catch (e) {
-        errors.push(e);
-      }
-    }
-    let errors = [];
-    if (data.name && typeof data.name !== "string") {
-      errors.push("name must be a string");
-    }
-    if (data.installDirectory && typeof data.installDirectory !== "string") {
-      errors.push("installDirectory must be a string");
-    }
-    if (!data.installDirectory && !data.name) {
-      errors.push("You must specify either name or installDirectory");
-    }
-    if (errors.length > 0) {
-      let errorMsg = "Your Binary constructor is invalid:";
-      errors.forEach((error) => {
-        errorMsg += error;
-      });
-      error(errorMsg);
-    }
-    this.url = url;
-    this.name = data.name || -1;
-    this.installDirectory = data.installDirectory || envPaths(this.name).config;
-    this.binaryDirectory = -1;
-    this.binaryPath = -1;
-  }
-
-  _getInstallDirectory() {
-    if (!existsSync(this.installDirectory)) {
-      mkdirSync(this.installDirectory, { recursive: true });
-    }
-    return this.installDirectory;
-  }
-
-  _getBinaryDirectory() {
-    const installDirectory = this._getInstallDirectory();
-    const binaryDirectory = join(this.installDirectory, "bin");
-    if (existsSync(binaryDirectory)) {
-      this.binaryDirectory = binaryDirectory;
-    } else {
-      error(`You have not installed ${this.name ? this.name : "this package"}`);
-    }
-    return this.binaryDirectory;
-  }
-
-  _getBinaryPath() {
-    if (this.binaryPath === -1) {
-      const binaryDirectory = this._getBinaryDirectory();
-      this.binaryPath = join(binaryDirectory, this.name);
-    }
-
-    return this.binaryPath;
-  }
-
-  async install() {
-    if (binaryHash === "<binaryhash>" && !devBinaryTar) return;
-
-    const dir = this._getInstallDirectory();
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-    }
-
-    this.binaryDirectory = join(dir, "bin");
-
-    if (existsSync(this.binaryDirectory)) {
-      rimraf.sync(this.binaryDirectory);
-    }
-
-    mkdirSync(this.binaryDirectory, { recursive: true });
-
-    if (!this.url.startsWith("http")) {
-      console.log(`Extracting release from ${this.url}`);
-      tar
-        .x({ file: this.url, strip: 1, C: this.binaryDirectory })
-        .then(() => {
-          console.log(
-            `${this.name ? this.name : "Your package"} has been installed!`
-          );
-        })
-        .catch((e) => {
-          error(`Error extracting release: ${e.message}`, e);
-        });
-    } else {
-      console.log(`Downloading release from ${this.url}`);
-
-      return axios({ url: this.url, responseType: "stream" })
-        .then((res) => {
-          res.data.pipe(tar.x({ strip: 1, C: this.binaryDirectory }));
-        })
-        .then(() => {
-          console.log(
-            `${this.name ? this.name : "Your package"} has been installed!`
-          );
-        })
-        .catch((e) => {
-          error("Error fetching release", e.message);
-        });
-    }
-  }
-
-  uninstall() {
-    if (existsSync(this._getInstallDirectory())) {
-      rimraf.sync(this.installDirectory);
-      console.log(
-        `${this.name ? this.name : "Your package"} has been uninstalled`
-      );
-    }
-  }
-
-  run() {
-    const binaryPath = this._getBinaryPath();
-    const [, , ...args] = process.argv;
-
-    const options = { cwd: process.cwd(), stdio: "inherit" };
-
-    const result = spawnSync(binaryPath, args, options);
-
-    if (result.error) {
-      console.error(result.error);
-      process.exit(1);
-    }
-
-    process.exit(result.status);
-  }
-}
-
 const packageJSON = path.join(
   path.dirname(path.dirname(fileURLToPath(import.meta.url))),
   "package.json"
 );
 
-const {
-  version,
-  name,
-  repository,
-  binaryHash,
-  devBinaryTar,
-  ...etc
-} = JSON.parse(readFileSync(packageJSON));
+const { version, name, repository, binaryHash, ...etc } = JSON.parse(
+  readFileSync(packageJSON)
+);
 
 const supportedPlatforms = [
   {
@@ -187,7 +45,7 @@ const supportedPlatforms = [
   },
 ];
 
-const getPlatform = () => {
+export const getPlatform = () => {
   const type = os.type();
   const architecture = os.arch();
 
@@ -208,34 +66,97 @@ const getPlatform = () => {
   );
 };
 
-const getBinary = () => {
-  const platform = getPlatform();
+///
+
+const _installDirectory = envPaths(name).config;
+const _binaryDirectory = join(_installDirectory, version, "bin");
+const _binaryPath = join(_binaryDirectory, name);
+
+// static information that doesn't change once the package is run.
+export const meta = {
+  installDir: _installDirectory,
+  binaryDir: _binaryDirectory,
+  binaryPath: _binaryPath,
+  version,
+  name,
+  repository,
+  binaryHash,
+};
+
+// users never really call this because removal isn't usually "nicely done"
+// it's usually "rm -rf" or something
+export function uninstall(
+  { installDirectory = _installDirectory } = {
+    installDirectory: _installDirectory,
+  }
+) {
+  if (existsSync(installDirectory)) {
+    rimraf.sync(installDirectory);
+    console.log(
+      `${this.name ? this.name : "Your package"} has been uninstalled`
+    );
+  }
+}
+
+const getBinaryUrlForPlatform = ({ binaryHash: bHash, platform } = {}) => {
+  let hash = bHash || binaryHash;
+  let plat = platform || getPlatform();
   // the url for this binary is constructed from values in `package.json`
   // https://github.com/toastdotdev/toast/releases/download/v1.0.0/toast-example-v1.0.0-x86_64-apple-darwin.tar.gz
   // const url = `${repository.url}/releases/download/v${version}/${name}-v${version}-${platform}.tar.gz`;
-  const url = devBinaryTar
-    ? devBinaryTar
-    : `https://github.com/toastdotdev/toast/releases/download/binaries-ci-${binaryHash}/${platform}.tar.gz`;
-  return new Binary(url, { name: "toast" });
+  return `https://github.com/toastdotdev/toast/releases/download/binaries-ci-${hash}/${plat}.tar.gz`;
 };
 
-export const run = () => {
-  const binary = getBinary();
-  binary.run();
-};
+export async function installFromUrl({ url: u, binaryDirectory: bDir } = {}) {
+  let binaryDirectory = bDir || _binaryDirectory;
+  const url = u || getBinaryUrlForPlatform();
 
-export const setLocalBinaryPath = (localPath) => {
-  let packageJSONContent = JSON.parse(readFileSync(packageJSON));
-  packageJSONContent.devBinaryTar = path.resolve(localPath);
-  writeFileSync(packageJSON, JSON.stringify(packageJSONContent, null, 2));
-};
+  if (existsSync(binaryDirectory)) {
+    rimraf.sync(binaryDirectory);
+  }
 
-export const install = () => {
-  const binary = getBinary();
-  binary.install();
-};
+  mkdirSync(binaryDirectory, { recursive: true });
 
-export const uninstall = () => {
-  const binary = getBinary();
-  binary.uninstall();
-};
+  console.log(`Downloading release from ${url}`);
+
+  return axios({ url, responseType: "stream" })
+    .then((res) => {
+      res.data.pipe(tar.x({ strip: 1, C: binaryDirectory }));
+    })
+    .then(() => {
+      console.log(
+        `${
+          this.name ? this.name : "Your package"
+        } has been installed to ${binaryDirectory}!`
+      );
+    })
+    .catch((e) => {
+      error("Error fetching release", e.message);
+    });
+}
+
+export function run(
+  { binaryPath = _binaryPath } = { binaryPath: _binaryPath }
+) {
+  const [, , ...args] = process.argv;
+
+  const options = { cwd: process.cwd(), stdio: "inherit" };
+
+  const result = spawnSync(binaryPath, args, options);
+
+  if (result.error) {
+    console.error(result.error);
+    process.exit(1);
+  }
+
+  process.exit(result.status);
+}
+
+export function getCurrentPlatformMeta() {
+  const platform = getPlatform();
+  const url = getBinaryUrlForPlatform({ platform, binaryHash });
+  return {
+    ...meta,
+    remoteBinaryUrl: url,
+  };
+}
