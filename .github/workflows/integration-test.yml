@@ -45,7 +45,7 @@ jobs:
       - name: Run cargo build
         working-directory: toast
         run: cargo build
-        - name: replace toast dep with local toast-node-wrapper
+      - name: replace toast dep with local toast-node-wrapper
         working-directory: starters
         run: |
           for D in `find . -t d -d 1`
