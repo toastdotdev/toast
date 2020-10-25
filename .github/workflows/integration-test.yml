@@ -54,6 +54,8 @@ jobs:
         run: |
           for D in `fd starters -t d -d 1`
           do
+            echo $D;
+            ls;
             cd $D;
             node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));';
             yarn;
