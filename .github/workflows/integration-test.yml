@@ -33,6 +33,11 @@ jobs:
         with:
           repository: toastdotdev/www.toast.dev
           path: www.toast.dev
+      - run: |
+          ls
+          ls ..
+          ls toast
+          ls www.toast.dev
       - name: Install nightly toolchain
         uses: actions-rs/toolchain@v1
         with:
