@@ -65,7 +65,7 @@ jobs:
         run: |
           for D in `fd starters -t d -d 1`
             cd $D;
-            TOAST_BINARY="$PWD/../toast/target/debug/$BINARY_NAME" yarn build;
+            TOAST_BINARY="$PWD/../../toast/target/debug/$BINARY_NAME" yarn build;
             cd -;
           end
         shell: bash
