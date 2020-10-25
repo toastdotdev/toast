@@ -51,7 +51,7 @@ jobs:
       - name: replace toast dep with local toast-node-wrapper
         working-directory: starters
         run: |
-          for D in `find . -t d -d 1`
+          for D in `fd . -t d -d 1`
           do
             cd $D;
             echo $D;
