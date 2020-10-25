@@ -52,7 +52,7 @@ jobs:
           npx create-toast minimal minimal
       - name: starters — Install dependencies
         run: |
-          for D in `fd starters -t d -d 1`
+          for D in `fd . 'starters/' -t d -d 1`
           do
             echo $D;
             ls;
@@ -66,7 +66,7 @@ jobs:
           TOAST_PREVENT_INSTALL: true
       - name: build starters
         run: |
-          for D in `fd starters -t d -d 1`
+          for D in `fd . 'starters/' -t d -d 1`
           do
             cd $D;
             TOAST_BINARY="$PWD/../../toast/target/debug/$BINARY_NAME" yarn build;
