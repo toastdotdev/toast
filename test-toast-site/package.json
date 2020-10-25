@@ -8,5 +8,16 @@
   "dependencies": {
     "@sector/breadbox": "^0.0.4",
     "toast": "*"
+  },
+  "type": "module",
+  "snowpack": {
+    "exclude": [
+      "postcss.js",
+      "utils/postcss-config-functions.mjs"
+    ],
+    "knownEntrypoints": [
+      "preact",
+      "preact/hooks"
+    ]
   }
 }
