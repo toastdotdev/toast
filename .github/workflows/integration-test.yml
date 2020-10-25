@@ -48,7 +48,9 @@ jobs:
       - name: replace toast dep with local toast-node-wrapper
         working-directory: www.toast.dev
         run: |
+          echo $NEW_TOAST_VERSION
           sed -i "s/^\s*\"toast\":.*$/  \"toast\": \"$NEW_TOAST_VERSION\"/" package.json
+          cat package.json
         env:
           NEW_TOAST_VERSION: ../toast/toast-node-wrapper
       - name: npm install in toast.dev
