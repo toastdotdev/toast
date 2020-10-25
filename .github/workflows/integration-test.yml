@@ -49,11 +49,11 @@ jobs:
           npx create-toast default
           cd default
           node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../toast/toast-node-wrapper"; delete json.scripts.postinstall; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));'
-          npm i
+          yarn
           ls -R node_modules/toast
           ls -R node_modules/preact
-          npm run breadbox --dest public/web_modules
-          npm run build
+          yarn breadbox --dest public/web_modules
+          yarn build
         shell: bash
         env:
           TOAST_PREVENT_INSTALL: true
