@@ -119,33 +119,31 @@ export async function installFromUrl({ url: u, binaryDirectory: bDir } = {}) {
 
   console.log(`Downloading release from ${url}`);
 
-  return axios({ url, responseType: "stream" })
+  await axios({ url, responseType: "stream" })
     .then((res) => {
       res.data.pipe(
         createWriteStream(path.join(binaryDirectory, "toast.tar.gz"))
       );
     })
-    .then(() => {
-      const result = spawnSync("tar", ["-xf", "toast.tar.gz", "--strip=1"], {
-        cwd: binaryDirectory,
-        stdio: "inherit",
-      });
-
-      if (result.error) {
-        console.error(result.error);
-        process.exit(1);
-      }
-    })
-    .then(() => {
-      console.log(
-        `${
-          name ? name : "Your package"
-        } has been installed to ${binaryDirectory}!`
-      );
-    })
     .catch((e) => {
       error("Error fetching release", e.message);
     });
+
+  console.log(`untarring ${name} from ${binaryDirectory}`);
+  const result = spawnSync("tar", ["-xf", "toast.tar.gz", "--strip=1"], {
+    cwd: binaryDirectory,
+    stdio: "inherit",
+  });
+
+  if (result.error) {
+    console.error(result.error);
+    process.exit(1);
+  }
+
+  console.log(
+    `${name ? name : "Your package"} has been installed to ${binaryDirectory}!`
+  );
+  return;
 }
 
 export function run(
