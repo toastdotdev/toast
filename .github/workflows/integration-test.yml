@@ -17,15 +17,15 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             target: toast
-            bin: /toast/target/debug/toast
+            bin: /target/debug/toast
           - os: macos-latest
             platform: macos
             target: toast
-            bin: /toast/target/debug/toast
+            bin: /target/debug/toast
           - os: windows-latest
             platform: windows
             target: toast.exe
-            bin: \toast\target\debug\toast.exe
+            bin: \target\debug\toast.exe
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -41,9 +41,9 @@ jobs:
         with:
           node-version: "14"
           check-latest: true
-      - name: Run cargo build
+      - name: Run cargo install
         working-directory: toast
-        run: cargo build
+        run: cargo install
       - name: Install fd
         run: |
           cargo install fd-find
@@ -78,4 +78,5 @@ jobs:
           done
         shell: bash
         env:
-          TOAST_BINARY: ${{github.workspace}}${{matrix.bin}}
+          TOAST_BINARY: toast
+          OLD: ${{github.workspace}}${{matrix.bin}}
