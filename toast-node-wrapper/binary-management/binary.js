@@ -126,7 +126,7 @@ export async function installFromUrl({ url: u, binaryDirectory: bDir } = {}) {
     .then(() => {
       console.log(
         `${
-          this.name ? this.name : "Your package"
+          name ? name : "Your package"
         } has been installed to ${binaryDirectory}!`
       );
     })
