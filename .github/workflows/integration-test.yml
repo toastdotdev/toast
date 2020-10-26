@@ -75,7 +75,7 @@ jobs:
             cd $D;
             echo $PWD;
             echo $TOAST_BINARY;
-            yarn build;
+            yarn toast incremental .;
             cd -;
           done
         shell: bash
