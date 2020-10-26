@@ -17,15 +17,15 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             target: toast
-            bin: ${{github.workspace}}\..\..\toast\target\debug\toast.exe
+            bin: \..\..\toast\target\debug\toast.exe
           - os: macos-latest
             platform: macos
             target: toast
-            bin: ${{github.workspace}}/../../toast/target/debug/toast
+            bin: /../../toast/target/debug/toast
           - os: windows-latest
             platform: windows
             target: toast.exe
-            bin: ${{github.workspace}}/../../toast/target/debug/toast
+            bin: /../../toast/target/debug/toast
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -78,4 +78,4 @@ jobs:
           done
         shell: bash
         env:
-          TOAST_BINARY: ${{matrix.bin}}
+          TOAST_BINARY_SUFFIX: ${{github.workspace}}${{matrix.bin}}
