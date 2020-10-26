@@ -17,7 +17,7 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             target: toast
-            bin: \..\..\toast\target\debug\toast.exe
+            bin: /../../toast/target/debug/toast
           - os: macos-latest
             platform: macos
             target: toast
@@ -25,7 +25,7 @@ jobs:
           - os: windows-latest
             platform: windows
             target: toast.exe
-            bin: /../../toast/target/debug/toast
+            bin: \..\..\toast\target\debug\toast.exe
 
     runs-on: ${{ matrix.os }}
     steps:
