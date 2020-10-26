@@ -126,11 +126,15 @@ export async function installFromUrl({ url: u, binaryDirectory: bDir } = {}) {
       );
     })
     .then(() => {
-      spawnSync("tar", [
-        "-xf",
-        path.join(binaryDirectory, "toast.tar.gz"),
-        "--strip=1",
-      ]);
+      const result = spawnSync("tar", ["-xf", "toast.tar.gz", "--strip=1"], {
+        cwd: binaryDirectory,
+        stdio: "inherit",
+      });
+
+      if (result.error) {
+        console.error(result.error);
+        process.exit(1);
+      }
     })
     .then(() => {
       console.log(
