@@ -3,13 +3,13 @@ import { join } from "path";
 import { spawnSync } from "child_process";
 
 import axios from "axios";
-import tar from "tar";
+// import tar from "tar";
 import envPaths from "env-paths";
 import rimraf from "rimraf";
 
 import os from "os";
 import cTable from "console.table";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, createWriteStream } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 
@@ -121,7 +121,16 @@ export async function installFromUrl({ url: u, binaryDirectory: bDir } = {}) {
 
   return axios({ url, responseType: "stream" })
     .then((res) => {
-      res.data.pipe(tar.x({ strip: 1, C: binaryDirectory }));
+      res.data.pipe(
+        createWriteStream(path.join(binaryDirectory, "toast.tar.gz"))
+      );
+    })
+    .then(() => {
+      spawnSync("tar", [
+        "-xf",
+        path.join(binaryDirectory, "toast.tar.gz"),
+        "--strip=1",
+      ]);
     })
     .then(() => {
       console.log(
