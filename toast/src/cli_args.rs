@@ -35,11 +35,10 @@ pub enum Toast {
         output_dir: Option<PathBuf>,
 
         /// Path to node_modules/toast
-        #[structopt(short, long, parse(try_from_str = abspath))]
-        toast_module_path: Option<PathBuf>,
-
-        /// Path to node_modules bin directory
-        #[structopt(short, long, parse(try_from_str = abspath))]
-        npm_bin_dir: Option<PathBuf>,
+        ///
+        /// For internal use only. This is not a supported
+        /// option.
+        #[structopt(env)]
+        toast_module_path: PathBuf,
     },
 }
