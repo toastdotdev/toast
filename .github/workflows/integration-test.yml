@@ -66,7 +66,10 @@ jobs:
         run: |
           for D in `fd . 'starters/' -t d -d 1`
           do
+            echo $D;
             cd $D;
+            echo $PWD;
+            echo $BINARY_NAME;
             TOAST_BINARY="$PWD/../../toast/target/debug/$BINARY_NAME" yarn build;
             cd -;
           done
