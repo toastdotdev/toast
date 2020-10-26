@@ -47,7 +47,7 @@ jobs:
         run: |
           cd toast
           cargo install --debug --path .
-          echo "::set-output binary=$(which toast)"
+          echo "::set-output name=binary::$(which toast)"
       - name: Install fd
         run: |
           cargo install fd-find
