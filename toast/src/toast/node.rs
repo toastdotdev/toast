@@ -121,15 +121,7 @@ pub async fn source_data(
     // execute Command if we don't need to
     if toast_js_file.exists() {
         let bin = toast_module_path.join("toast-source-data.mjs");
-        let bin_str = {
-            if bin.is_absolute() {
-                println!("{} is absolute", bin.display());
-                format!("file:///{}", bin.display())
-            } else {
-                println!("{} is not absolute", bin.display());
-                bin.display().to_string()
-            }
-        };
+        let bin_str = bin.display();
         let output = cmd!(
             "cmd",
             "/c",
