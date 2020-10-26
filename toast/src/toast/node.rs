@@ -123,8 +123,10 @@ pub async fn source_data(
         let bin = toast_module_path.join("toast-source-data.mjs");
         let bin_str = {
             if bin.is_absolute() {
-                format!("file:///{}", bin.display().to_string())
+                println!("{} is absolute", bin.display());
+                format!("file:///{}", bin.display())
             } else {
+                println!("{} is not absolute", bin.display());
                 bin.display().to_string()
             }
         };
