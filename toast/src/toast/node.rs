@@ -127,11 +127,10 @@ pub async fn source_data(
                     "file:///{}",
                     bin.to_str()
                         .ok_or_else(|| eyre!("failed to make npm bin into str"))?
-                );
+                )
             } else {
-                let bin_str = bin
-                    .to_str()
-                    .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
+                bin.to_str()
+                    .ok_or_else(|| eyre!("failed to make npm bin into str"))?
             }
         };
         let output = cmd!(
