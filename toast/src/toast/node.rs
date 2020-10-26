@@ -121,9 +121,19 @@ pub async fn source_data(
     // execute Command if we don't need to
     if toast_js_file.exists() {
         let bin = toast_module_path.join("toast-source-data.mjs");
-        let bin_str = bin
-            .to_str()
-            .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
+        let bin_str = {
+            if bin.is_absolute() {
+                format!(
+                    "file:///{}",
+                    bin.to_str()
+                        .ok_or_else(|| eyre!("failed to make npm bin into str"))?
+                );
+            } else {
+                let bin_str = bin
+                    .to_str()
+                    .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
+            }
+        };
         let output = cmd!(
             "cmd",
             "/c",

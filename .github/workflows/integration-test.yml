@@ -73,11 +73,12 @@ jobs:
         run: |
           for D in `fd . 'starters/' -t d -d 1`
           do
-            echo $D;
+            echo "---";
+            echo "building $D";
             cd $D;
-            echo $PWD;
-            echo $TOAST_BINARY;
+            echo "using binary located at $TOAST_BINARY";
             yarn toast incremental .;
+            ls -R public;
             cd -;
           done
         shell: bash
