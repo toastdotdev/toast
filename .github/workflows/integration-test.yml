@@ -75,4 +75,4 @@ jobs:
           done
         shell: bash
         env:
-          BINARY_NAME: ${{ matrix.target }}
+          TOAST_BINARY: ${{github.workspace}}/../../toast/target/debug/${{ matrix.target }}
