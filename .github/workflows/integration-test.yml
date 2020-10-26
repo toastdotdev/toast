@@ -69,8 +69,7 @@ jobs:
             echo $D;
             cd $D;
             echo $PWD;
-            echo $BINARY_NAME;
-            TOAST_BINARY="$PWD/../../toast/target/debug/$BINARY_NAME" yarn build;
+            yarn build;
             cd -;
           done
         shell: bash
