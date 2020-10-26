@@ -43,7 +43,9 @@ jobs:
           check-latest: true
       - name: Run cargo install
         working-directory: toast
-        run: cargo install --debug --bin toast
+        run: |
+          ls
+          cargo install --debug --bin toast
       - name: Install fd
         run: |
           cargo install fd-find
