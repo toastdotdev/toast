@@ -81,4 +81,3 @@ jobs:
         shell: bash
         env:
           TOAST_BINARY: toast
-          OLD: ${{github.workspace}}${{matrix.bin}}
