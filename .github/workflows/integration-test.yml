@@ -42,10 +42,12 @@ jobs:
           node-version: "14"
           check-latest: true
       - name: Run cargo install
+        id: install-toast
         working-directory: toast
         run: |
           cd toast
           cargo install --debug --path .
+          echo "::set-output binary=$(which toast)"
       - name: Install fd
         run: |
           cargo install fd-find
@@ -80,4 +82,4 @@ jobs:
           done
         shell: bash
         env:
-          TOAST_BINARY: toast
+          TOAST_BINARY: steps.install-toast.outputs.binary
