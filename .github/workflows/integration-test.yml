@@ -78,4 +78,4 @@ jobs:
           done
         shell: bash
         env:
-          TOAST_BINARY_SUFFIX: ${{github.workspace}}${{matrix.bin}}
+          TOAST_BINARY: ${{github.workspace}}${{matrix.bin}}
