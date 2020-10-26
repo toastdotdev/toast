@@ -69,6 +69,7 @@ jobs:
             echo $D;
             cd $D;
             echo $PWD;
+            echo $TOAST_BINARY;
             yarn build;
             cd -;
           done
