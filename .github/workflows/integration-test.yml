@@ -82,4 +82,4 @@ jobs:
           done
         shell: bash
         env:
-          TOAST_BINARY: steps.install-toast.outputs.binary
+          TOAST_BINARY: ${{steps.install-toast.outputs.binary}}
