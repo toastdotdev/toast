@@ -27,6 +27,9 @@ pub enum Toast {
         debug: bool,
 
         /// The directory of your Toast site
+        ///
+        /// The directory that includes your src, toast.js
+        /// and other files.
         #[structopt(parse(try_from_str = abspath))]
         input_dir: PathBuf,
 
@@ -38,7 +41,7 @@ pub enum Toast {
         ///
         /// For internal use only. This is not a supported
         /// option.
-        #[structopt(env)]
+        #[structopt(short, long, env)]
         toast_module_path: PathBuf,
     },
 }
