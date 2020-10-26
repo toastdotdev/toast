@@ -9,7 +9,6 @@ use salsa_db::{Files, SalsaToastDatabaseStruct};
 
 pub struct Cache {
     db: SalsaToastDatabaseStruct,
-    npm_bin_dir: PathBuf,
 }
 
 impl Cache {
@@ -23,17 +22,17 @@ impl Cache {
     }
     pub fn get_js_for_browser(&mut self, key: &str, import_map: ImportMap) -> String {
         let db: &mut dyn Files = &mut self.db;
-        db.js_for_browser(key.to_string(), self.npm_bin_dir.clone(), import_map)
+        db.js_for_browser(key.to_string(), import_map)
     }
     pub fn get_js_for_server(&mut self, key: &str) -> String {
         let db: &mut dyn Files = &mut self.db;
-        db.js_for_server(key.to_string(), self.npm_bin_dir.clone())
+        db.js_for_server(key.to_string())
     }
 }
 
 #[instrument]
-pub fn init(npm_bin_dir: PathBuf) -> Cache {
+pub fn init() -> Cache {
     let db = SalsaToastDatabaseStruct::default();
 
-    Cache { db, npm_bin_dir }
+    Cache { db }
 }

@@ -14,11 +14,10 @@ pub fn render_to_html(
     dir_of_input_files: String,
     output_dir: String,
     filepaths: Vec<String>,
-    npm_bin_dir: PathBuf,
-    toast_module_path: Option<PathBuf>,
+    toast_module_path: PathBuf,
     active_pb: Arc<ProgressBar>,
 ) -> Result<()> {
-    let bin = npm_bin_dir.join("toast-render");
+    let bin = toast_module_path.join("toast-render.mjs");
     let bin_str = bin
         .to_str()
         .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
@@ -44,11 +43,10 @@ pub fn render_to_html(
     dir_of_input_files: String,
     output_dir: String,
     filepaths: Vec<String>,
-    npm_bin_dir: PathBuf,
-    toast_module_path: Option<PathBuf>,
+    toast_module_path: PathBuf,
     active_pb: Arc<ProgressBar>,
 ) -> Result<()> {
-    let bin = toast_module_path.unwrap().join("toast-render.mjs");
+    let bin = toast_module_path.join("toast-render.mjs");
     let bin_str = bin
         .to_str()
         .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
@@ -77,15 +75,14 @@ pub fn render_to_html(
 #[cfg(not(windows))]
 pub async fn source_data(
     toast_js_file: &PathBuf,
-    npm_bin_dir: PathBuf,
-    toast_module_path: Option<PathBuf>,
+    toast_module_path: PathBuf,
     active_pb: Arc<ProgressBar>,
 ) -> Result<()> {
     // not a guarantee that toast.js will exist when node
     // goes to look for it: just a sanity check to not
     // execute Command if we don't need to
     if toast_js_file.exists() {
-        let bin = npm_bin_dir.join("toast-source-data");
+        let bin = toast_module_path.join("toast-source-data.mjs");
         let bin_str = bin
             .to_str()
             .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
@@ -116,15 +113,14 @@ pub async fn source_data(
 #[cfg(windows)]
 pub async fn source_data(
     toast_js_file: &PathBuf,
-    npm_bin_dir: PathBuf,
-    toast_module_path: Option<PathBuf>,
+    toast_module_path: PathBuf,
     active_pb: Arc<ProgressBar>,
 ) -> Result<()> {
     // not a guarantee that toast.js will exist when node
     // goes to look for it: just a sanity check to not
     // execute Command if we don't need to
     if toast_js_file.exists() {
-        let bin = toast_module_path.unwrap().join("toast-source-data.mjs");
+        let bin = toast_module_path.join("toast-source-data.mjs");
         let bin_str = bin
             .to_str()
             .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
