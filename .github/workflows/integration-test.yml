@@ -44,7 +44,7 @@ jobs:
       - name: Run cargo install
         working-directory: toast
         run: |
-          ls
+          cd toast
           cargo install --debug --bin toast
       - name: Install fd
         run: |
