@@ -119,15 +119,21 @@ export async function installFromUrl({ url: u, binaryDirectory: bDir } = {}) {
 
   console.log(`Downloading release from ${url}`);
 
-  await axios({ url, responseType: "stream" })
-    .then((res) => {
-      res.data.pipe(
-        createWriteStream(path.join(binaryDirectory, "toast.tar.gz"))
-      );
-    })
-    .catch((e) => {
-      error("Error fetching release", e.message);
-    });
+  await new Promise((resolve, reject) => {
+    const writer = createWriteStream(
+      path.join(binaryDirectory, "toast.tar.gz")
+    );
+    axios({ url, responseType: "stream" })
+      .then((res) => {
+        res.data.pipe(writer);
+      })
+      .catch((e) => {
+        console.error("Error fetching release", e.message);
+      });
+
+    writer.on("finish", resolve);
+    writer.on("error", reject);
+  });
 
   console.log(`untarring ${name} from ${binaryDirectory}`);
   const result = spawnSync("tar", ["-xf", "toast.tar.gz", "--strip=1"], {
