@@ -86,7 +86,7 @@ fn main() -> Result<()> {
         .install()?;
 
     check_node_version()?;
-
+    let _ = fs::remove_file("/var/tmp/toaster.sock");
     // let client = libhoney::init(libhoney::Config {
     //     options: libhoney::client::Options {
     //         api_key: "YOUR_API_KEY".to_string(),
