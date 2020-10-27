@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use std::sync::Arc;
 use tracing::instrument;
 
@@ -22,12 +21,7 @@ use swc_ecma_visit::FoldWith;
 use crate::toast::{breadbox::ImportMap, swc_import_map_rewrite::SWCImportMapRewrite};
 
 #[instrument]
-pub fn compile_js_for_browser(
-    source: String,
-    filename: String,
-    npm_bin_dir: PathBuf,
-    import_map: ImportMap,
-) -> String {
+pub fn compile_js_for_browser(source: String, filename: String, import_map: ImportMap) -> String {
     let opts = &get_opts();
     let cm = Arc::<SourceMap>::default();
     let handler = Arc::new(Handler::with_tty_emitter(
@@ -58,7 +52,6 @@ pub fn compile_js_for_browser(
     //         // println!("Matched {:?}!", i);
     //         module.visit_mut_with(&mut SVGImportToComponent {
     //             filepath: Path::new(&filename),
-    //             npm_bin_dir: npm_bin_dir,
     //         });
     //         // program.print();
     //         return Ok(Program::Module(module));
@@ -74,7 +67,7 @@ pub fn compile_js_for_browser(
 }
 
 #[instrument]
-pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: PathBuf) -> String {
+pub fn compile_js_for_server(source: String, filename: String) -> String {
     let opts = &get_opts();
 
     let cm = Arc::<SourceMap>::default();
@@ -98,7 +91,6 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Path
     //         // println!("Matched {:?}!", i);
     //         module.visit_mut_with(&mut SVGImportToComponent {
     //             filepath: Path::new(&filename),
-    //             npm_bin_dir: npm_bin_dir,
     //         });
     //         // program.print();
     //         return Ok(Program::Module(module));

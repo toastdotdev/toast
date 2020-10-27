@@ -17,12 +17,15 @@ jobs:
           - os: ubuntu-latest
             platform: linux
             target: toast
+            bin: /target/debug/toast
           - os: macos-latest
             platform: macos
             target: toast
+            bin: /target/debug/toast
           - os: windows-latest
             platform: windows
             target: toast.exe
+            bin: \target\debug\toast.exe
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -38,9 +41,13 @@ jobs:
         with:
           node-version: "14"
           check-latest: true
-      - name: Run cargo build
+      - name: Run cargo install
+        id: install-toast
         working-directory: toast
-        run: cargo build
+        run: |
+          cd toast
+          cargo install --debug --path .
+          echo "::set-output name=binary::$(which toast)"
       - name: Install fd
         run: |
           cargo install fd-find
@@ -66,10 +73,14 @@ jobs:
         run: |
           for D in `fd . 'starters/' -t d -d 1`
           do
+            echo "---";
+            echo "building $D";
             cd $D;
-            TOAST_BINARY="$PWD/../../toast/target/debug/$BINARY_NAME" yarn build;
+            echo "using binary located at $TOAST_BINARY";
+            yarn toast incremental .;
+            ls -R public;
             cd -;
           done
         shell: bash
         env:
-          BINARY_NAME: ${{ matrix.target }}
+          TOAST_BINARY: ${{steps.install-toast.outputs.binary}}

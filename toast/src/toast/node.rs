@@ -9,14 +9,15 @@ use std::{
 use tracing::instrument;
 
 #[instrument]
+#[cfg(not(windows))]
 pub fn render_to_html(
     dir_of_input_files: String,
     output_dir: String,
     filepaths: Vec<String>,
-    npm_bin_dir: PathBuf,
+    toast_module_path: PathBuf,
     active_pb: Arc<ProgressBar>,
 ) -> Result<()> {
-    let bin = npm_bin_dir.join("toast-render");
+    let bin = toast_module_path.join("toast-render.mjs");
     let bin_str = bin
         .to_str()
         .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
@@ -31,26 +32,99 @@ pub fn render_to_html(
     ];
     args.extend(filepaths.iter().cloned());
     let output = cmd("node", args).stderr_to_stdout();
-    run_cmd("sourceData", output, active_pb)?;
+    run_cmd("renderHTML", output, active_pb)?;
 
     Ok(())
 }
 
 #[instrument]
+#[cfg(windows)]
+pub fn render_to_html(
+    dir_of_input_files: String,
+    output_dir: String,
+    filepaths: Vec<String>,
+    toast_module_path: PathBuf,
+    active_pb: Arc<ProgressBar>,
+) -> Result<()> {
+    let bin = toast_module_path.join("toast-render.mjs");
+    let bin_str = bin
+        .to_str()
+        .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
+    let mut args: Vec<String> = vec![
+        "/c".to_owned(),
+        "node".to_owned(),
+        "--unhandled-rejections".to_owned(),
+        "strict".to_owned(),
+        "--loader".to_owned(),
+        "toast/src/loader.mjs".to_owned(),
+        bin_str.to_owned(),
+        dir_of_input_files,
+        dunce::canonicalize(output_dir)
+            .unwrap()
+            .display()
+            .to_string(),
+    ];
+    args.extend(filepaths.iter().cloned());
+    let output = cmd("cmd", args).stderr_to_stdout();
+    run_cmd("renderHTML", output, active_pb)?;
+
+    Ok(())
+}
+
+#[instrument]
+#[cfg(not(windows))]
 pub async fn source_data(
     toast_js_file: &PathBuf,
-    npm_bin_dir: PathBuf,
+    toast_module_path: PathBuf,
     active_pb: Arc<ProgressBar>,
 ) -> Result<()> {
     // not a guarantee that toast.js will exist when node
     // goes to look for it: just a sanity check to not
     // execute Command if we don't need to
     if toast_js_file.exists() {
-        let bin = npm_bin_dir.join("toast-source-data");
+        let bin = toast_module_path.join("toast-source-data.mjs");
         let bin_str = bin
             .to_str()
             .ok_or_else(|| eyre!("failed to make npm bin into str"))?;
         let output = cmd!(
+            "node",
+            "--unhandled-rejections",
+            "strict",
+            "--loader",
+            "toast/src/loader.mjs",
+            bin_str,
+            "/var/tmp/toaster.sock",
+            &toast_js_file
+                .to_str()
+                .ok_or_else(|| eyre!("failed to make toast_js_file into str"))?
+        )
+        .stderr_to_stdout();
+
+        run_cmd("sourceData", output, active_pb)?;
+        Ok(())
+    } else {
+        // toast file doesn't exist
+        // skip running sourceData
+        Ok(())
+    }
+}
+
+#[instrument]
+#[cfg(windows)]
+pub async fn source_data(
+    toast_js_file: &PathBuf,
+    toast_module_path: PathBuf,
+    active_pb: Arc<ProgressBar>,
+) -> Result<()> {
+    // not a guarantee that toast.js will exist when node
+    // goes to look for it: just a sanity check to not
+    // execute Command if we don't need to
+    if toast_js_file.exists() {
+        let bin = toast_module_path.join("toast-source-data.mjs");
+        let bin_str = bin.display().to_string();
+        let output = cmd!(
+            "cmd",
+            "/c",
             "node",
             "--unhandled-rejections",
             "strict",

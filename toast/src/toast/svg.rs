@@ -4,7 +4,6 @@ use swc_ecma_visit::{noop_visit_mut_type, VisitMut};
 
 pub struct SVGImportToComponent<'a> {
     pub filepath: &'a Path,
-    pub npm_bin_dir: String,
 }
 
 impl VisitMut for SVGImportToComponent<'_> {

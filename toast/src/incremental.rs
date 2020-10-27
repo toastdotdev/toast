@@ -30,7 +30,7 @@ pub struct IncrementalOpts<'a> {
     pub debug: bool,
     pub project_root_dir: &'a PathBuf,
     pub output_dir: PathBuf,
-    pub npm_bin_dir: PathBuf,
+    pub toast_module_path: PathBuf,
     pub import_map: ImportMap,
 }
 
@@ -56,7 +56,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         debug,
         project_root_dir,
         output_dir,
-        npm_bin_dir,
+        toast_module_path,
         import_map,
     } = opts;
     let tmp_dir = {
@@ -85,7 +85,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     // channel to listen for createPage events
     let (tx, rx) = unbounded();
     // create incremental cache db
-    let mut cache = init(npm_bin_dir.clone());
+    let mut cache = init();
 
     // boot server
     let mut app = tide::with_state(TideSharedState {
@@ -121,7 +121,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
             debug,
             project_root_dir: &project_root_dir,
             output_dir: output_dir.clone(),
-            npm_bin_dir: npm_bin_dir.clone(),
+            toast_module_path: toast_module_path.clone(),
             import_map: import_map.clone(),
         },
         &mut cache,
@@ -134,7 +134,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         .collect::<Vec<String>>();
     let _data_from_user = source_data(
         &project_root_dir.join("toast.js"),
-        npm_bin_dir.clone(),
+        toast_module_path.clone(),
         create_pages_pb.clone(),
     )
     .await?;
@@ -197,7 +197,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
                                 debug,
                                 project_root_dir: &project_root_dir,
                                 output_dir: output_dir.clone(),
-                                npm_bin_dir: npm_bin_dir.clone(),
+                                toast_module_path: toast_module_path.clone(),
                                 import_map: import_map.clone(),
                             },
                             &mut cache,
@@ -248,7 +248,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     let mut list: Vec<String> = file_list
         .clone()
         .iter()
-        .filter(|f| f.starts_with("src/pages"))
+        .filter(|f| f.starts_with("src/pages") || f.starts_with(r"src\pages"))
         .cloned()
         .collect();
     list.extend(remote_file_list);
@@ -268,7 +268,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
         tmp_dir.into_os_string().into_string().unwrap(),
         output_dir.into_os_string().into_string().unwrap(),
         list,
-        npm_bin_dir,
+        toast_module_path,
         render_pb.clone(),
     )?;
     render_pb.abandon_with_message("html rendered");
@@ -303,7 +303,7 @@ fn compile_src_files(
         debug,
         project_root_dir,
         output_dir,
-        npm_bin_dir,
+        toast_module_path,
         import_map,
     } = opts;
     let files_by_source_id: HashMap<String, OutputFile> =
@@ -355,7 +355,7 @@ fn compile_src_files(
                 debug,
                 project_root_dir: &project_root_dir,
                 output_dir: output_dir.clone(),
-                npm_bin_dir: npm_bin_dir.clone(),
+                toast_module_path: toast_module_path.clone(),
                 import_map: import_map.clone(),
             },
             cache,
@@ -377,7 +377,7 @@ fn compile_js(
         debug: _,
         project_root_dir: _,
         output_dir,
-        npm_bin_dir: _,
+        toast_module_path: _,
         import_map,
     } = opts;
     let browser_output_file = output_dir.join(Path::new(&output_file.dest));

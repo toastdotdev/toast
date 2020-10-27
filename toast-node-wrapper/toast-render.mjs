@@ -16,6 +16,10 @@ async function main() {
     path.join(srcDir, "src", "page-wrapper.js")
   );
 
+  const relativePath = path
+    .relative(path.dirname(fileURLToPath(import.meta.url)), srcDir)
+    .split(path.sep);
+
   // Only try to import the page wrapper if it exists, otherwise ignore
   if (pageWrapperExists) {
     // Imports are expected to be in posix. We receive a full path here through
@@ -23,14 +27,7 @@ async function main() {
     // It also can't import if it begins with a drive letter on Windows, so
     // we find the relative path from this file to the srcDir.
     const pageWrapperPath =
-      "./" +
-      path.posix.join(
-        ...path
-          .relative(path.dirname(fileURLToPath(import.meta.url)), srcDir)
-          .split(path.sep),
-        "src",
-        "page-wrapper.js"
-      );
+      "./" + path.posix.join(...relativePath, "src", "page-wrapper.js");
     try {
       const wrapper = await import(pageWrapperPath);
       pageWrapper = wrapper.default;
@@ -42,7 +39,9 @@ async function main() {
   // render html
   return Promise.all(
     args.map(async (file) => {
-      const nodeComponent = await import(path.resolve(srcDir, file));
+      const nodeComponent = await import(
+        "./" + path.posix.join(...relativePath, file)
+      );
       let data;
       try {
         data = await fs.readFile(
@@ -67,7 +66,10 @@ async function main() {
         // write HTML file out for page
         const htmlFilePath = path.resolve(
           outputDir,
-          file.replace("src/pages/", "").replace(".js", ".html")
+          file
+            .replace("src/pages/", "")
+            .replace("src\\pages\\", "") // for windows
+            .replace(".js", ".html")
         );
         return fs.writeFile(htmlFilePath, html);
       });

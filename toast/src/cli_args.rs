@@ -27,11 +27,21 @@ pub enum Toast {
         debug: bool,
 
         /// The directory of your Toast site
+        ///
+        /// The directory that includes your src, toast.js
+        /// and other files.
         #[structopt(parse(try_from_str = abspath))]
         input_dir: PathBuf,
 
         /// Output directory, "./public" if not present
         #[structopt(parse(from_os_str))]
         output_dir: Option<PathBuf>,
+
+        /// Path to node_modules/toast
+        ///
+        /// For internal use only. This is not a supported
+        /// option.
+        #[structopt(short, long, env)]
+        toast_module_path: PathBuf,
     },
 }
