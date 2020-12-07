@@ -34,4 +34,20 @@ pub enum Toast {
         #[structopt(parse(from_os_str))]
         output_dir: Option<PathBuf>,
     },
+
+    /// Incrementally build your input directory on file change
+    #[structopt(name = "develop")]
+    Develop {
+        /// Activate debug mode
+        #[structopt(short, long)]
+        debug: bool,
+
+        /// The directory of your Toast site
+        #[structopt(parse(try_from_str = abspath))]
+        input_dir: PathBuf,
+
+        /// Output directory, "./public" if not present
+        #[structopt(parse(from_os_str))]
+        output_dir: Option<PathBuf>,
+    },
 }

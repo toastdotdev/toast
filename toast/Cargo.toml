@@ -45,6 +45,8 @@ fs_extra = "1.2.0"
 indicatif = "0.15.0"
 dunce = "1.0.1"
 duct = "0.13.4"
+notify = "4.0.12"
+
 
 [dependencies.tracing]
 version = "0.1.19"
@@ -57,3 +59,4 @@ features = ["tty-emitter"]
 [dependencies.color-eyre]
 version = "0.5.4-rc.3"
 features = ["issue-url", "capture-spantrace"]
+

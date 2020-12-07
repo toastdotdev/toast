@@ -12,6 +12,12 @@ mod cli_args;
 mod incremental;
 mod toast;
 
+extern crate notify;
+use notify::{watcher, RecursiveMode, Watcher};
+
+use std::sync::mpsc::channel;
+use std::time::Duration;
+
 use cli_args::Toast;
 use incremental::{incremental_compile, IncrementalOpts};
 use toast::breadbox::parse_import_map;
@@ -97,62 +103,97 @@ fn main() -> Result<()> {
     // });
     // event := builder.new_event()
     // event.add_field("key", Value::String("val".to_string())), event.add(data)
-    let npm_bin_dir = get_npm_bin_dir()?;
     let opt = Toast::from_args();
 
     match opt {
-        Toast::Incremental {
+        Toast::Develop {
             debug,
             input_dir,
             output_dir,
         } => {
-            let import_map = {
-                let import_map_filepath = input_dir
-                    .join("public")
-                    .join("web_modules")
-                    .join("import-map.json");
-                let contents = fs::read_to_string(&import_map_filepath).wrap_err_with(|| {
-                    format!(
-                        "Failed to read `import-map.json` from `{}`",
-                        &import_map_filepath.display()
-                    )
-                })?;
-                parse_import_map(&contents).wrap_err_with(|| {
-                    format!(
-                        "Failed to parse import map from content `{}` at `{}`",
-                        contents,
-                        &import_map_filepath.display()
-                    )
-                })?
-            };
+            let (tx, rx) = channel();
+            let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
+            watcher
+                .watch(&input_dir.join("src"), RecursiveMode::Recursive)
+                .unwrap();
+            watcher
+                .watch(&input_dir.join("content"), RecursiveMode::Recursive)
+                .unwrap();
 
-            task::block_on(incremental_compile(IncrementalOpts {
-                debug,
-                project_root_dir: &input_dir,
-                output_dir: match output_dir {
-                    Some(v) => v,
-                    None => {
-                        let full_output_dir = input_dir.join("public");
-                        std::fs::create_dir_all(&full_output_dir).wrap_err_with(|| {
-                            format!(
-                                "Failed create directories for path `{}`",
-                                &full_output_dir.display()
-                            )
-                        })?;
-                        full_output_dir
-                            .canonicalize()
-                            .wrap_err_with(|| "Failed canonicalize the output directory path")?
+            match incremental_build(debug, &input_dir, &output_dir) {
+                Ok(()) => println!("it worked!"),
+                Err(e) => println!("build error: {:?}", e),
+            }
+            loop {
+                match rx.recv() {
+                    Ok(event) => {
+                        println!("Incremental build due to");
+                        println!("{:?}", event);
+                        match incremental_build(debug, &input_dir, &output_dir) {
+                            Ok(()) => println!("it worked!"),
+                            Err(e) => println!("build error: {:?}", e),
+                        }
                     }
-                },
-                npm_bin_dir,
-                import_map,
-            }))
+                    Err(e) => println!("watch error: {:?}", e),
+                }
+            }
         }
+        Toast::Incremental {
+            debug,
+            input_dir,
+            output_dir,
+        } => incremental_build(debug, &input_dir, &output_dir),
     }
     // println!("{}", result)
     // .expect("failed to process file");
     // event.send(&mut client)
     // client.close();
+}
+
+fn incremental_build(debug: bool, input_dir: &PathBuf, output_dir: &Option<PathBuf>) -> Result<()> {
+    println!("Incremental build!");
+    let npm_bin_dir = get_npm_bin_dir()?;
+    let import_map = {
+        let import_map_filepath = input_dir
+            .join("public")
+            .join("web_modules")
+            .join("import-map.json");
+        let contents = fs::read_to_string(&import_map_filepath).wrap_err_with(|| {
+            format!(
+                "Failed to read `import-map.json` from `{}`",
+                &import_map_filepath.display()
+            )
+        })?;
+        parse_import_map(&contents).wrap_err_with(|| {
+            format!(
+                "Failed to parse import map from content `{}` at `{}`",
+                contents,
+                &import_map_filepath.display()
+            )
+        })?
+    };
+
+    return task::block_on(incremental_compile(IncrementalOpts {
+        debug,
+        project_root_dir: &input_dir,
+        output_dir: match &*output_dir {
+            Some(v) => v.to_path_buf(),
+            None => {
+                let full_output_dir = input_dir.join("public");
+                std::fs::create_dir_all(&full_output_dir).wrap_err_with(|| {
+                    format!(
+                        "Failed create directories for path `{}`",
+                        &full_output_dir.display()
+                    )
+                })?;
+                full_output_dir
+                    .canonicalize()
+                    .wrap_err_with(|| "Failed canonicalize the output directory path")?
+            }
+        },
+        npm_bin_dir,
+        import_map,
+    }))
 }
 
 #[cfg(feature = "capture-spantrace")]
