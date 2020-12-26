@@ -189,7 +189,7 @@ jobs:
           sed -i "s/<binaryhash>/$BINARY_HASH/" toast-node-wrapper/package.json
           sed -i "s/^\s*\"version\":.*$/  \"version\": \"$NEW_TOAST_VERSION\",/" toast-node-wrapper/package.json
           cat toast-node-wrapper/package.json
-          ::set-output name=new-toast-version::$(echo $NEW_TOAST_VERSION)
+          echo "::set-output name=new-toast-version::$(echo $NEW_TOAST_VERSION)"
         shell: bash
       - name: npm publish
         run: |
