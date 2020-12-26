@@ -4,7 +4,7 @@ use tracing::instrument;
 
 mod salsa_db;
 
-use crate::toast::{breadbox::ImportMap, sources::Source};
+use crate::toast::{esinstall::ImportMap, sources::Source};
 use salsa_db::{Files, SalsaToastDatabaseStruct};
 
 pub struct Cache {

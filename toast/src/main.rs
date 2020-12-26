@@ -14,7 +14,7 @@ mod toast;
 
 use cli_args::Toast;
 use incremental::{incremental_compile, IncrementalOpts};
-use toast::breadbox::parse_import_map;
+use toast::esinstall::parse_import_map;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 

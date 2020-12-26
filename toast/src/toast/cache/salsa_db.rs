@@ -1,5 +1,5 @@
 use crate::toast::{
-    breadbox::ImportMap,
+    esinstall::ImportMap,
     sources::Source,
     swc_ops::{compile_js_for_browser, compile_js_for_server},
 };
