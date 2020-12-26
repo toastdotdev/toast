@@ -168,6 +168,10 @@ jobs:
     needs: [do-binary-release]
     name: npm publish
     runs-on: ubuntu-latest
+    outputs:
+      new-toast-version:
+        description: "the npm-published toast version"
+        value: ${{ steps.modify.outputs.new-toast-version }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -176,6 +180,7 @@ jobs:
           node-version: "12"
           registry-url: "https://registry.npmjs.org"
       - name: modify NPM package version and binaryHash
+        id: modify
         run: |
           TOAST_VERSION=$(npm show toast version)
           NEW_TOAST_VERSION=$(echo $TOAST_VERSION | awk -F. '{printf("%d.%d.%d", $1, $2 , $3+1)}')
@@ -186,6 +191,7 @@ jobs:
           sed -i "s/<binaryhash>/$BINARY_HASH/" toast-node-wrapper/package.json
           sed -i "s/^\s*\"version\":.*$/  \"version\": \"$NEW_TOAST_VERSION\",/" toast-node-wrapper/package.json
           cat toast-node-wrapper/package.json
+          ::set-output name=new-toast-version::$(echo $NEW_TOAST_VERSION)
         shell: bash
       - name: npm publish
         run: |
@@ -201,3 +207,14 @@ jobs:
       - name: trigger www netlify build
         run: |
           curl -X POST -d {} https://api.netlify.com/build_hooks/5f94b31bccb688f78b0a2576
+  trigger-npm-publish-notification:
+    needs: [do-npm-release]
+    name: Notify Discord of Publish
+    runs-on: ubuntu-latest
+    env:
+      NEW_TOAST_VERSION: ${{ needs.do-npm-release.outputs.new-toast-version }}
+      URL: ${{secrets.NPM_PUBLISH_NOTIFICATION_URL}}
+    steps:
+      - name: curl
+        run: |
+          curl -XPOST $URL -H "Content-Type: application/json" -d '{"content": "$NEW_TOAST_VERSION"}'
