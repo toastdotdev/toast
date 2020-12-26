@@ -73,16 +73,6 @@ jobs:
         working-directory: www.toast.dev/public
         run: ls -R
         shell: bash
-        - name: postinstall on toast.dev for different output dir
-        working-directory: www.toast.dev
-        run: npm run postinstall --dest dist
-        name: toast incremental different output dir
-        working-directory: www.toast.dev
-        run: npm run build --dest dist
-      - name: display files in dist
-        working-directory: www.toast.dev/dist
-        run: ls -R
-        shell: bash
       - name: deploy
         working-directory: www.toast.dev
         if: github.event.ref == 'refs/heads/main'
