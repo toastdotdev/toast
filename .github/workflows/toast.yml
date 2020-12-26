@@ -169,9 +169,7 @@ jobs:
     name: npm publish
     runs-on: ubuntu-latest
     outputs:
-      new-toast-version:
-        description: "the npm-published toast version"
-        value: ${{ steps.modify.outputs.new-toast-version }}
+      new-toast-version: ${{ steps.modify.outputs.new-toast-version }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
@@ -217,4 +215,4 @@ jobs:
     steps:
       - name: curl
         run: |
-          curl -XPOST $URL -H "Content-Type: application/json" -d '{"content": "$NEW_TOAST_VERSION"}'
+          curl -XPOST $URL -H "Content-Type: application/json" -d '{"content": "Toast v$NEW_TOAST_VERSION was released to NPM"}'
