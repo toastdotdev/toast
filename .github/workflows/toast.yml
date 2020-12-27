@@ -139,9 +139,17 @@ jobs:
         with:
           command: build
           args: --release
+      - name: run the binary once
+        run: |
+          ./release/${{matrix.target}} --help
       - name: tar the binary for upload
         run: |
-          tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
+          if [[ "${{matrix.platform}}" == "macos-latest"  ]]; then
+              brew install gnu-tar
+              gtar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
+          else
+              tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
+          fi
         shell: bash
       - name: Upload Release Asset
         id: upload-release-asset
