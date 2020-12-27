@@ -141,7 +141,7 @@ jobs:
           args: --release
       - name: tar the binary for upload
         run: |
-          if [[ "${{matrix.platform}}" == "macos-latest"  ]]; then
+          if [[ "${{matrix.platform}}" == "macos"  ]]; then
               brew install gnu-tar
               gtar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
           else
