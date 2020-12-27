@@ -139,9 +139,6 @@ jobs:
         with:
           command: build
           args: --release
-      - name: run the binary once
-        run: |
-          ./release/${{matrix.target}} --help
       - name: tar the binary for upload
         run: |
           if [[ "${{matrix.platform}}" == "macos-latest"  ]]; then
