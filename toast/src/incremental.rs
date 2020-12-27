@@ -1,6 +1,8 @@
-use crate::toast::{
+use crate::{
     cache::init,
+    cache::Cache,
     esinstall::ImportMap,
+    internal_api::{ModuleSpec, SetDataForSlug},
     node::{render_to_html, source_data},
     sources::{Source, SourceKind},
 };
@@ -19,11 +21,6 @@ use std::{
 };
 use tracing::instrument;
 use walkdir::WalkDir;
-
-use crate::toast::{
-    cache::Cache,
-    internal_api::{ModuleSpec, SetDataForSlug},
-};
 
 #[derive(Debug)]
 pub struct IncrementalOpts<'a> {

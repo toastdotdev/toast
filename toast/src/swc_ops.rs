@@ -19,7 +19,7 @@ use swc_ecma_parser::{EsConfig, Syntax};
 use swc_ecma_transforms::react;
 use swc_ecma_visit::FoldWith;
 
-use crate::toast::{esinstall::ImportMap, swc_import_map_rewrite::SWCImportMapRewrite};
+use crate::{esinstall::ImportMap, swc_import_map_rewrite::SWCImportMapRewrite};
 
 #[instrument]
 pub fn compile_js_for_browser(

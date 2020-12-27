@@ -9,6 +9,10 @@ edition = "2018"
 # default = ["capture-spantrace"]
 # capture-spantrace = ["color-eyre/capture-spantrace"]
 
+[lib]
+name = "toast"
+path = "src/lib.rs"
+
 [dependencies]
 owo-colors = "*"
 salsa = "0.15.2"

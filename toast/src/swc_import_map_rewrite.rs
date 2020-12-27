@@ -1,4 +1,4 @@
-use crate::toast::esinstall::ImportMap;
+use crate::esinstall::ImportMap;
 // use string_cache::Atom;
 use swc_ecma_ast::{ImportDecl, Str};
 use swc_ecma_visit::{noop_fold_type, Fold};

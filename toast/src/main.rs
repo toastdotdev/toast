@@ -8,13 +8,11 @@ use structopt::StructOpt;
 use sys_info::{os_release, os_type};
 use tracing::instrument;
 
-mod cli_args;
-mod incremental;
-mod toast;
-
-use cli_args::Toast;
-use incremental::{incremental_compile, IncrementalOpts};
-use toast::esinstall::parse_import_map;
+use toast::{
+    cli_args::Toast,
+    esinstall::parse_import_map,
+    incremental::{incremental_compile, IncrementalOpts},
+};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -107,7 +105,8 @@ fn main() -> Result<()> {
             output_dir,
         } => {
             let import_map = {
-                let import_map_filepath = output_dir.clone()
+                let import_map_filepath = output_dir
+                    .clone()
                     .unwrap_or(input_dir.join("public"))
                     .join("web_modules")
                     .join("import-map.json");
