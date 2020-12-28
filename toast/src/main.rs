@@ -1,9 +1,9 @@
 use async_std::task;
 use color_eyre::eyre::{eyre, Result, WrapErr};
 use semver::Version;
-use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
+use std::{fs, time::Instant};
 use structopt::StructOpt;
 use sys_info::{os_release, os_type};
 use tracing::instrument;
@@ -68,6 +68,7 @@ fn check_node_version() -> Result<()> {
 fn main() -> Result<()> {
     #[cfg(feature = "capture-spantrace")]
     install_tracing();
+    let start = Instant::now();
 
     color_eyre::config::HookBuilder::default()
         // .panic_message(MyPanicMessage)
@@ -98,7 +99,7 @@ fn main() -> Result<()> {
     let npm_bin_dir = get_npm_bin_dir()?;
     let opt = Toast::from_args();
 
-    match opt {
+    let result = match opt {
         Toast::Incremental {
             debug,
             input_dir,
@@ -147,8 +148,9 @@ fn main() -> Result<()> {
                 import_map,
             }))
         }
-    }
-    // println!("{}", result)
+    };
+    eprintln!("Toast executed in {:?}", start.elapsed());
+    result
     // .expect("failed to process file");
     // event.send(&mut client)
     // client.close();
