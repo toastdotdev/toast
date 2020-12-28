@@ -23,10 +23,16 @@ pub enum ModuleSpec {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct SetDataForSlug {
     /// /some/url or some/url
+    #[serde(default = "default_prerender")]
+    pub prerender: bool,
     pub slug: String,
     pub component: Option<ModuleSpec>,
     pub data: Option<serde_json::Value>,
     pub wrapper: Option<ModuleSpec>,
+}
+
+fn default_prerender() -> bool {
+    true
 }
 
 impl SetDataForSlug {
@@ -87,6 +93,7 @@ mod tests {
         let u: SetDataForSlug = serde_json::from_value(v).unwrap();
         assert_eq!(
             SetDataForSlug {
+                prerender: true,
                 slug: String::from("/something"),
                 component: Some(ModuleSpec::Source {
                     code: String::from(
@@ -122,6 +129,41 @@ mod tests {
         let u: SetDataForSlug = serde_json::from_value(v).unwrap();
         assert_eq!(
             SetDataForSlug {
+                prerender: true,
+                slug: String::from("/something"),
+                component: Some(ModuleSpec::Source {
+                    code: String::from(
+                        "import { h } from 'preact'; export default props => <div>hi</div>"
+                    )
+                }),
+                data: None,
+                wrapper: None
+            },
+            u
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_deserialize_prerender_can_be_false() -> Result<()> {
+        let data = r#"
+        {
+            "prerender": false,
+            "slug": "/something",
+            "component": {
+                "mode": "source",
+                "value": "import { h } from 'preact'; export default props => <div>hi</div>"
+            }
+        }"#;
+
+        // Parse the string of data into serde_json::Value.
+        let v: Value = serde_json::from_str(data)?;
+
+        // Access parts of the data by indexing with square brackets.
+        let u: SetDataForSlug = serde_json::from_value(v).unwrap();
+        assert_eq!(
+            SetDataForSlug {
+                prerender: false,
                 slug: String::from("/something"),
                 component: Some(ModuleSpec::Source {
                     code: String::from(
@@ -139,6 +181,7 @@ mod tests {
     #[test]
     fn test_file_paths_from_slugs() -> Result<()> {
         let set = SetDataForSlug {
+            prerender: true,
             slug: String::from("/something/here"),
             component: None,
             data: None,
@@ -154,6 +197,7 @@ mod tests {
     #[test]
     fn test_file_paths_from_slug_directories() -> Result<()> {
         let set = SetDataForSlug {
+            prerender: true,
             slug: String::from("/something/here/"),
             component: None,
             data: None,
@@ -169,6 +213,7 @@ mod tests {
     #[test]
     fn test_file_paths_from_root_slug() -> Result<()> {
         let set = SetDataForSlug {
+            prerender: true,
             slug: String::from("/"),
             component: None,
             data: None,

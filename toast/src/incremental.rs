@@ -233,13 +233,15 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
 
     let remote_file_list: Vec<String> = set_data_events
         .iter()
-        .filter_map(|Event::Set(set)| match set.component {
-            None => None,
-            Some(_) => {
+        .filter_map(|Event::Set(set)| match (&set.component, &set.prerender) {
+            // if we have a component set, and we are supposed to prerender this component
+            // into html, then keep it for later processing.
+            (Some(_), true) => {
                 let mut js_filepath = set.slug_as_relative_filepath();
                 js_filepath.set_extension("js");
                 Some(js_filepath.display().to_string())
             }
+            _ => None,
         })
         .collect();
     let mut list: Vec<String> = file_list
