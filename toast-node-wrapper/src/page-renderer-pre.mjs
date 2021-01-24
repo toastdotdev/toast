@@ -19,6 +19,7 @@ window.dataPath = ${dataPath && `"${dataPath}"`};
   ${helmet.title.toString()}
   ${helmet.meta.toString()}
   ${helmet.link.toString()}
+  ${helmet.script.toString()}
   ${helmet.noscript.toString()}
   </head>
   <body ${helmet.bodyAttributes.toString()}>
