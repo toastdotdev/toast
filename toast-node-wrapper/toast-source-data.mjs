@@ -42,7 +42,7 @@ It should be an object with a mode of "filepath" or "source":
 const page = {
   component: {
     mode: "source",
-    value: \`import { h } from preact;
+    value: \`import { h } from "preact";
 
 export default props => <div>
   <h1>Some Code</h1>
