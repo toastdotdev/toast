@@ -51,7 +51,7 @@ pub fn compile_js_for_browser(
     let result = compiler.transform(
         post_transform_program.unwrap(),
         false,
-        built_config.unwrap().pass,
+        built_config.unwrap().unwrap().pass,
     );
     // .and_then(|program| {
     //     if let Program::Module(mut module) = program {
@@ -68,7 +68,13 @@ pub fn compile_js_for_browser(
     //     }
     // });
 
-    let output = compiler.print(&result, SourceMapsConfig::default(), None, false);
+    let output = compiler.print(
+        &result,
+        JscTarget::Es2020,
+        SourceMapsConfig::default(),
+        None,
+        false,
+    );
 
     output.unwrap().code
 }
@@ -92,7 +98,11 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Path
     let parsed_program = compiler.parse_js(fm, JscTarget::Es2020, get_syntax(), true, true);
     let built_config = compiler.config_for_file(opts, &FileName::Custom(filename));
 
-    let result = compiler.transform(parsed_program.unwrap(), false, built_config.unwrap().pass);
+    let result = compiler.transform(
+        parsed_program.unwrap(),
+        false,
+        built_config.unwrap().unwrap().pass,
+    );
     // .and_then(|program| {
     //     if let Program::Module(mut module) = program {
     //         // println!("Matched {:?}!", i);
@@ -108,7 +118,13 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Path
     //     }
     // });
 
-    let output = compiler.print(&result, SourceMapsConfig::default(), None, false);
+    let output = compiler.print(
+        &result,
+        JscTarget::Es2020,
+        SourceMapsConfig::default(),
+        None,
+        false,
+    );
 
     output.unwrap().code
 }
@@ -117,9 +133,9 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Path
 fn get_opts() -> Options {
     Options {
         is_module: true,
-        config: Some(Config {
+        config: Config {
             jsc: JscConfig {
-                target: JscTarget::Es2020,
+                target: Some(JscTarget::Es2020),
                 syntax: Some(Syntax::Es(EsConfig {
                     jsx: true,
                     nullish_coalescing: true,
@@ -154,7 +170,7 @@ fn get_opts() -> Options {
                 ..Default::default()
             },
             ..Default::default()
-        }),
+        },
         ..Default::default()
     }
 }
