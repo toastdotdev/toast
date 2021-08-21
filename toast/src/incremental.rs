@@ -116,7 +116,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
     let files_by_source_id = compile_src_files(
         IncrementalOpts {
             debug,
-            project_root_dir: &project_root_dir,
+            project_root_dir,
             output_dir: output_dir.clone(),
             npm_bin_dir: npm_bin_dir.clone(),
             import_map: import_map.clone(),
@@ -192,7 +192,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
                             },
                             IncrementalOpts {
                                 debug,
-                                project_root_dir: &project_root_dir,
+                                project_root_dir,
                                 output_dir: output_dir.clone(),
                                 npm_bin_dir: npm_bin_dir.clone(),
                                 import_map: import_map.clone(),
@@ -296,7 +296,7 @@ pub async fn incremental_compile(opts: IncrementalOpts<'_>) -> Result<()> {
 fn compile_src_files(
     opts: IncrementalOpts,
     cache: &mut Cache,
-    tmp_dir: &PathBuf,
+    tmp_dir: &Path,
 ) -> Result<HashMap<String, OutputFile>> {
     let IncrementalOpts {
         debug,
@@ -352,13 +352,13 @@ fn compile_src_files(
             output_file,
             IncrementalOpts {
                 debug,
-                project_root_dir: &project_root_dir,
+                project_root_dir,
                 output_dir: output_dir.clone(),
                 npm_bin_dir: npm_bin_dir.clone(),
                 import_map: import_map.clone(),
             },
             cache,
-            &tmp_dir,
+            tmp_dir,
         )?;
     }
     Ok(files_by_source_id)
@@ -370,7 +370,7 @@ fn compile_js(
     output_file: &OutputFile,
     opts: IncrementalOpts,
     cache: &mut Cache,
-    tmp_dir: &PathBuf,
+    tmp_dir: &Path,
 ) -> Result<()> {
     let IncrementalOpts {
         debug: _,
@@ -399,7 +399,7 @@ fn compile_js(
     })?;
 
     let js_node = cache.get_js_for_server(source_id);
-    let mut node_output_file = tmp_dir.clone();
+    let mut node_output_file = tmp_dir.to_path_buf();
     node_output_file.push(&output_file.dest);
     // node_output_file.set_extension("mjs");
     let file_dir = node_output_file.parent().ok_or(eyre!(format!(

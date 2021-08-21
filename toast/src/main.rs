@@ -108,7 +108,7 @@ fn main() -> Result<()> {
             let import_map = {
                 let import_map_filepath = output_dir
                     .clone()
-                    .unwrap_or(input_dir.join("public"))
+                    .unwrap_or_else(|| input_dir.join("public"))
                     .join("web_modules")
                     .join("import-map.json");
                 let contents = fs::read_to_string(&import_map_filepath).wrap_err_with(|| {

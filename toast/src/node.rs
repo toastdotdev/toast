@@ -1,11 +1,7 @@
 use color_eyre::eyre::{eyre, Result};
 use duct::cmd;
 use indicatif::ProgressBar;
-use std::{
-    io::{prelude::*, BufReader},
-    path::PathBuf,
-    sync::Arc,
-};
+use std::{io::{prelude::*, BufReader}, path::{Path, PathBuf}, sync::Arc};
 use tracing::instrument;
 
 #[instrument]
@@ -38,7 +34,7 @@ pub fn render_to_html(
 
 #[instrument]
 pub async fn source_data(
-    toast_js_file: &PathBuf,
+    toast_js_file: &Path,
     npm_bin_dir: PathBuf,
     active_pb: Arc<ProgressBar>,
 ) -> Result<()> {
