@@ -5,7 +5,8 @@ use tracing::instrument;
 use swc::{
     self,
     config::{
-        Config, GlobalPassOption, JscConfig, JscTarget, OptimizerConfig, Options, SourceMapsConfig,
+        Config, GlobalPassOption, JscConfig, JscTarget,
+        OptimizerConfig, Options, SourceMapsConfig,
         TransformConfig,
     },
 };
@@ -19,7 +20,10 @@ use swc_ecma_parser::{EsConfig, Syntax};
 use swc_ecma_transforms::react;
 use swc_ecma_visit::FoldWith;
 
-use crate::{esinstall::ImportMap, swc_import_map_rewrite::SWCImportMapRewrite};
+use crate::{
+    esinstall::ImportMap,
+    swc_import_map_rewrite::SWCImportMapRewrite,
+};
 
 #[instrument]
 pub fn compile_js_for_browser(
@@ -37,21 +41,37 @@ pub fn compile_js_for_browser(
         Some(cm.clone()),
     ));
 
-    let compiler = swc::Compiler::new(cm.clone(), handler);
+    let compiler = swc::Compiler::new(cm.clone());
 
-    let fm = cm.new_source_file(FileName::Custom(filename.clone()), source);
+    let fm = cm.new_source_file(
+        FileName::Custom(filename.clone()),
+        source,
+    );
 
-    let parsed_program = compiler.parse_js(fm, JscTarget::Es2020, get_syntax(), true, true);
-    let built_config = compiler.config_for_file(opts, &FileName::Custom(filename));
-    let post_transform_program = parsed_program.map(|program| {
-        program.fold_with(&mut SWCImportMapRewrite {
-            import_map: &import_map,
-        })
-    });
+    let parsed_program = compiler.parse_js(
+        fm,
+        &handler,
+        JscTarget::Es2020,
+        get_syntax(),
+        true,
+        true,
+    );
+    let built_config = compiler.config_for_file(
+        &handler,
+        opts,
+        &FileName::Custom(filename.clone()),
+    );
+    let post_transform_program =
+        parsed_program.map(|program| {
+            program.fold_with(&mut SWCImportMapRewrite {
+                import_map: &import_map,
+            })
+        });
     let result = compiler.transform(
+        &handler,
         post_transform_program.unwrap(),
         false,
-        built_config.unwrap().pass,
+        built_config.unwrap().unwrap().pass,
     );
     // .and_then(|program| {
     //     if let Program::Module(mut module) = program {
@@ -68,13 +88,26 @@ pub fn compile_js_for_browser(
     //     }
     // });
 
-    let output = compiler.print(&result, SourceMapsConfig::default(), None, false);
+    let output = compiler.print(
+        &result,
+        Some(&filename),
+        None,
+        JscTarget::Es2020,
+        SourceMapsConfig::default(),
+        None,
+        false,
+        None,
+    );
 
     output.unwrap().code
 }
 
 #[instrument]
-pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: PathBuf) -> String {
+pub fn compile_js_for_server(
+    source: String,
+    filename: String,
+    npm_bin_dir: PathBuf,
+) -> String {
     let opts = &get_opts();
 
     let cm = Arc::<SourceMap>::default();
@@ -85,14 +118,33 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Path
         Some(cm.clone()),
     ));
 
-    let compiler = swc::Compiler::new(cm.clone(), handler);
+    let compiler = swc::Compiler::new(cm.clone());
 
-    let fm = cm.new_source_file(FileName::Custom(filename.clone()), source);
+    let fm = cm.new_source_file(
+        FileName::Custom(filename.clone()),
+        source,
+    );
 
-    let parsed_program = compiler.parse_js(fm, JscTarget::Es2020, get_syntax(), true, true);
-    let built_config = compiler.config_for_file(opts, &FileName::Custom(filename));
+    let parsed_program = compiler.parse_js(
+        fm,
+        &handler,
+        JscTarget::Es2020,
+        get_syntax(),
+        true,
+        true,
+    );
+    let built_config = compiler.config_for_file(
+        &handler,
+        opts,
+        &FileName::Custom(filename.clone()),
+    );
 
-    let result = compiler.transform(parsed_program.unwrap(), false, built_config.unwrap().pass);
+    let result = compiler.transform(
+        &handler,
+        parsed_program.unwrap(),
+        false,
+        built_config.unwrap().unwrap().pass,
+    );
     // .and_then(|program| {
     //     if let Program::Module(mut module) = program {
     //         // println!("Matched {:?}!", i);
@@ -108,7 +160,16 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Path
     //     }
     // });
 
-    let output = compiler.print(&result, SourceMapsConfig::default(), None, false);
+    let output = compiler.print(
+        &result,
+        Some(&filename),
+        None,
+        JscTarget::Es2020,
+        SourceMapsConfig::default(),
+        None,
+        false,
+        None,
+    );
 
     output.unwrap().code
 }
@@ -117,9 +178,9 @@ pub fn compile_js_for_server(source: String, filename: String, npm_bin_dir: Path
 fn get_opts() -> Options {
     Options {
         is_module: true,
-        config: Some(Config {
+        config: Config {
             jsc: JscConfig {
-                target: JscTarget::Es2020,
+                target: Some(JscTarget::Es2020),
                 syntax: Some(Syntax::Es(EsConfig {
                     jsx: true,
                     nullish_coalescing: true,
@@ -138,7 +199,9 @@ fn get_opts() -> Options {
                         globals: Some(GlobalPassOption {
                             envs: std::env::vars()
                                 .filter_map(|(k, _)| {
-                                    if k.starts_with("TOAST_") {
+                                    if k.starts_with(
+                                        "TOAST_",
+                                    ) {
                                         Some(k)
                                     } else {
                                         None
@@ -154,7 +217,7 @@ fn get_opts() -> Options {
                 ..Default::default()
             },
             ..Default::default()
-        }),
+        },
         ..Default::default()
     }
 }
