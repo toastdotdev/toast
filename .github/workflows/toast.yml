@@ -110,7 +110,7 @@ jobs:
   do-binary-release:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-11]
         include:
           - os: ubuntu-latest
             platform: linux
