@@ -1,7 +1,11 @@
 use color_eyre::eyre::{eyre, Result};
 use duct::cmd;
 use indicatif::ProgressBar;
-use std::{io::{prelude::*, BufReader}, path::{Path, PathBuf}, sync::Arc};
+use std::{
+    io::{prelude::*, BufReader},
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use tracing::instrument;
 
 #[instrument]
