@@ -119,7 +119,7 @@ jobs:
             platform: macos
             target: toast
           - os: macos-11
-            platform: macos
+            platform: macos-arm
             target: toast
     needs: start-release
     name: cargo build --release
@@ -141,7 +141,7 @@ jobs:
           args: --release
       - name: tar the binary for upload
         run: |
-          if [[ "${{matrix.platform}}" == "macos"  ]]; then
+          if [[ "${{matrix.platform}}" == "macos"  ]] || [[ "${{matrix.platform}}" == "macos-arm" ]]; then
               brew install gnu-tar
               gtar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
           else

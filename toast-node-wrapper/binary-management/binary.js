@@ -43,6 +43,11 @@ const supportedPlatforms = [
     ARCHITECTURE: "x64",
     TARGET: "macos",
   },
+  {
+    TYPE: "Darwin",
+    ARCHITECTURE: "arm64",
+    TARGET: "macos-arm",
+  },
 ];
 
 export const getPlatform = () => {
