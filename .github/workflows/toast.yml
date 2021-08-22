@@ -121,9 +121,6 @@ jobs:
           - os: macos-11
             platform: macos
             target: toast
-          - os: windows-latest
-            platform: windows
-            target: toast.exe
     needs: start-release
     name: cargo build --release
     runs-on: ${{ matrix.os }}
