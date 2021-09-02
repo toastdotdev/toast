@@ -73,7 +73,6 @@ pub async fn source_data(
     }
 }
 
-
 fn run_cmd(
     subcommand_name: &str,
     command: duct::Expression,
@@ -133,8 +132,6 @@ fn run_cmd(
                 }
             }
         }
-        Err(e) => {
-         Err(e).wrap_err(format!("{} node process didn't start", subcommand_name))
-        }
+        Err(e) => Err(e).wrap_err(format!("{} node process didn't start", subcommand_name)),
     }
 }
