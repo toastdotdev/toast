@@ -1,4 +1,4 @@
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::{eyre, Result, WrapErr};
 use duct::cmd;
 use indicatif::ProgressBar;
 use std::{
@@ -73,64 +73,68 @@ pub async fn source_data(
     }
 }
 
+
 fn run_cmd(
     subcommand_name: &str,
     command: duct::Expression,
     active_pb: Arc<ProgressBar>,
 ) -> Result<()> {
-    if let Ok(reader) = command.reader() {
-        let reader = Arc::new(reader);
-        let thread_reader = reader.clone();
-        let child = std::thread::spawn(move || -> std::io::Result<()> {
-            let lines = BufReader::new(&*thread_reader).lines();
-            for (i, line_result) in lines.enumerate() {
-                match line_result {
-                    Ok(line) => {
-                        // this magic number pulls off the warning
-                        if i > 1 {
-                            // if the progress bars are hidden, so is the
-                            // output from the pb.println function
-                            // so we use the println macro instead
-                            if active_pb.is_hidden() {
-                                println!("{}", line)
-                            } else {
-                                active_pb.println(line);
+    match command.reader() {
+        Ok(reader) => {
+            let reader = Arc::new(reader);
+            let thread_reader = reader.clone();
+            let child = std::thread::spawn(move || -> std::io::Result<()> {
+                let lines = BufReader::new(&*thread_reader).lines();
+                for (i, line_result) in lines.enumerate() {
+                    match line_result {
+                        Ok(line) => {
+                            // this magic number pulls off the warning
+                            if i > 1 {
+                                // if the progress bars are hidden, so is the
+                                // output from the pb.println function
+                                // so we use the println macro instead
+                                if active_pb.is_hidden() {
+                                    println!("{}", line)
+                                } else {
+                                    active_pb.println(line);
+                                }
                             }
                         }
-                    }
-                    Err(_) => {
-                        break;
+                        Err(_) => {
+                            break;
+                        }
                     }
                 }
-            }
-            Ok(())
-        });
-        // wait for the process to stop running
-        while let Ok(None) = &reader.try_wait() {}
-        // wait for thread with stderr/stdout logging from the node
-        // process to complete
-        let _ = child.join();
-        // if the process ended in error, this will return
-        match &reader.try_wait()? {
-            None => {
-                // should never happen because we're while-let'ing above
-                panic!("{} reader returned None while still running. This is an unexpected error please report it on github.", subcommand_name)
-            }
-            Some(output_status) => {
-                if output_status.status.success() {
-                    Ok(())
-                } else if let Some(code) = output_status.status.code() {
-                    Err(eyre!(
-                        "{} node process exited with code {}",
-                        subcommand_name,
-                        code
-                    ))
-                } else {
-                    panic!("Should never reach here: 155");
+                Ok(())
+            });
+            // wait for the process to stop running
+            while let Ok(None) = &reader.try_wait() {}
+            // wait for thread with stderr/stdout logging from the node
+            // process to complete
+            let _ = child.join();
+            // if the process ended in error, this will return
+            match &reader.try_wait()? {
+                None => {
+                    // should never happen because we're while-let'ing above
+                    panic!("{} reader returned None while still running. This is an unexpected error please report it on github.", subcommand_name)
+                }
+                Some(output_status) => {
+                    if output_status.status.success() {
+                        Ok(())
+                    } else if let Some(code) = output_status.status.code() {
+                        Err(eyre!(
+                            "{} node process exited with code {}",
+                            subcommand_name,
+                            code
+                        ))
+                    } else {
+                        panic!("Should never reach here: 155");
+                    }
                 }
             }
         }
-    } else {
-        Err(eyre!("{} node process didn't start", subcommand_name))
+        Err(e) => {
+         Err(e).wrap_err(format!("{} node process didn't start", subcommand_name))
+        }
     }
 }
