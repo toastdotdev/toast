@@ -1,8 +1,8 @@
 use crate::esinstall::ImportMap;
 // use string_cache::Atom;
+use swc_common::DUMMY_SP;
 use swc_ecma_ast::{ImportDecl, Str};
 use swc_ecma_visit::{noop_fold_type, Fold};
-
 pub struct SWCImportMapRewrite<'a> {
     pub import_map: &'a ImportMap,
 }
@@ -24,6 +24,7 @@ impl Fold for SWCImportMapRewrite<'_> {
                         .get(&decl.src.value)
                         .unwrap()
                         .clone(),
+                    span: DUMMY_SP,
                     ..decl.src
                 },
                 ..decl
