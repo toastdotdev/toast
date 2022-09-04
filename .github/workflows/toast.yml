@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       new-toast-version: ${{ steps.modify.outputs.new-toast-version }}
+      did-release: ${{ steps.changesets.outputs.published }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -18,23 +19,15 @@ jobs:
         with:
           node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
-      - name: modify NPM package version
-        id: modify
-        run: |
-          TOAST_VERSION=$(npm show toast version)
-          NEW_TOAST_VERSION=$(echo $TOAST_VERSION | awk -F. '{printf("%d.%d.%d", $1, $2 , $3+1)}')
-          echo $TOAST_VERSION
-          echo $NEW_TOAST_VERSION
-          sed -i "s/^\s*\"version\":.*$/  \"version\": \"$NEW_TOAST_VERSION\",/" toast/package.json
-          cat toast/package.json
-          echo "::set-output name=new-toast-version::$(echo $NEW_TOAST_VERSION)"
-        shell: bash
-      - name: npm publish
-        run: |
-          cd toast
-          npm publish --access public
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          # This expects you to have a script called release which does a build for your packages and calls changeset publish
+          publish: yarn release
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
   trigger-www-build:
     needs: [do-npm-release]
     name: Update www.toast.dev docs
@@ -52,5 +45,6 @@ jobs:
       URL: ${{secrets.NPM_PUBLISH_NOTIFICATION_URL}}
     steps:
       - name: curl
+        if: needs.do-npm-release.outputs.did-release == 'true'
         run: |
           curl -XPOST $URL -H "Content-Type: application/json" -d "{\"content\": \"Toast v$NEW_TOAST_VERSION was released to NPM\"}"

@@ -13,6 +13,7 @@
     "node": ">=14.13.0"
   },
   "dependencies": {
+    "@changesets/cli": "^2.24.4",
     "patch-package": "^6.2.2"
   }
 }
