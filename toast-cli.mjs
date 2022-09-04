@@ -20,7 +20,6 @@ cli
   .option("-v, --verbose", "Be verbose")
   .action(async (input, output, options) => {
     PERF && performance.mark("start-action");
-    console.log(input, output, options);
 
     const inputPath = path.resolve(input);
     const outputPath = path.resolve(output || "public");
@@ -39,7 +38,11 @@ cli
       toast = await import(path.resolve(inputPath, "toast.js"));
       PERF && performance.mark("done-importing-toast");
     } catch (e) {
-      console.warn(e);
+      if (e.code === "ERR_MODULE_NOT_FOUND") {
+        console.log("no toast.js found, skipping");
+      } else {
+        console.warn(e);
+      }
     }
 
     if (!!toast) {
