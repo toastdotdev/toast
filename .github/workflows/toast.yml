@@ -10,7 +10,7 @@ jobs:
     name: npm publish
     runs-on: ubuntu-latest
     outputs:
-      new-toast-version: ${{ steps.modify.outputs.new-toast-version }}
+      new-packages: ${{ steps.changesets.outputs.publishedPackages }}
       did-release: ${{ steps.changesets.outputs.published }}
     steps:
       - name: Checkout sources
@@ -44,10 +44,10 @@ jobs:
     name: Notify Discord of Publish
     runs-on: ubuntu-latest
     env:
-      NEW_TOAST_VERSION: ${{ needs.do-npm-release.outputs.new-toast-version }}
+      NEW_PACKAGES: ${{ needs.do-npm-release.outputs.new-packages }}
       URL: ${{secrets.NPM_PUBLISH_NOTIFICATION_URL}}
     steps:
       - name: curl
         if: needs.do-npm-release.outputs.did-release == 'true'
         run: |
-          curl -XPOST $URL -H "Content-Type: application/json" -d "{\"content\": \"Toast v$NEW_TOAST_VERSION was released to NPM\"}"
+          curl -XPOST $URL -H "Content-Type: application/json" -d "{\"content\": \"Toast Packages were released to NPM: $NEW_PACKAGES \"}"
