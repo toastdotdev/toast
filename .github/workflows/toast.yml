@@ -6,169 +6,11 @@ on:
 name: Toast Release Pipeline
 
 jobs:
-  branchname:
-    name: branch name
-    runs-on: ubuntu-latest
-    outputs:
-      branch: ${{ steps.extract_branch.outputs.branch }}
-    steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-  check:
-    name: cargo check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
-          components: rustfmt, clippy
-
-      - name: Run cargo check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, macos-11]
-    name: cargo test
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
+        os: [ubuntu-latest]
 
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
-          components: rustfmt, clippy
-
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-
-  lints:
-    name: cargo fmt and cargo clippy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
-          components: rustfmt, clippy
-
-      - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-      - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
-  start-release:
-    needs: [test, branchname]
-    name: initiate release
-    runs-on: ubuntu-latest
-    outputs:
-      release-url: ${{ steps.create_release.outputs.upload_url }}
-      release-id: ${{ steps.create_release.outputs.id }}
-    if: needs.branchname.outputs.branch == 'main'
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-        with:
-          # TODO: tag_name needs to be unique
-          tag_name: binaries-ci-${{github.sha}}
-          release_name: Binary CI Release
-          body: |
-            continuously released toast binaries
-          draft: true
-          prerelease: true
-
-  do-binary-release:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, macos-11]
-        include:
-          - os: ubuntu-latest
-            platform: linux
-            target: toast
-          - os: macos-latest
-            platform: macos
-            target: toast
-          - os: macos-11
-            platform: macos-arm
-            target: toast
-    needs: start-release
-    name: cargo build --release
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
-          components: rustfmt, clippy
-
-      - name: Run cargo build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
-      - name: tar the binary for upload
-        run: |
-          if [[ "${{matrix.platform}}" == "macos"  ]] || [[ "${{matrix.platform}}" == "macos-arm" ]]; then
-              brew install gnu-tar
-              gtar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
-          else
-              tar -C target -cvzf ${{matrix.platform}}.tar.gz release/${{matrix.target}}
-          fi
-        shell: bash
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.start-release.outputs.release-url }}
-          asset_path: ${{ matrix.platform }}.tar.gz
-          asset_name: ${{ matrix.platform }}.tar.gz
-          asset_content_type: application/octet-stream
-      - name: Publish GH Release
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: "${{ needs.start-release.outputs.release-id }}",
-              draft: false,
-            });
   do-npm-release:
     needs: [do-binary-release]
     name: npm publish
@@ -177,28 +19,25 @@ jobs:
       new-toast-version: ${{ steps.modify.outputs.new-toast-version }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2-beta
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: "12"
+          node-version: "16.x"
           registry-url: "https://registry.npmjs.org"
-      - name: modify NPM package version and binaryHash
+      - name: modify NPM package version
         id: modify
         run: |
           TOAST_VERSION=$(npm show toast version)
           NEW_TOAST_VERSION=$(echo $TOAST_VERSION | awk -F. '{printf("%d.%d.%d", $1, $2 , $3+1)}')
-          BINARY_HASH=${{ github.sha }}
           echo $TOAST_VERSION
           echo $NEW_TOAST_VERSION
-          echo $BINARY_HASH
-          sed -i "s/<binaryhash>/$BINARY_HASH/" toast-node-wrapper/package.json
-          sed -i "s/^\s*\"version\":.*$/  \"version\": \"$NEW_TOAST_VERSION\",/" toast-node-wrapper/package.json
-          cat toast-node-wrapper/package.json
+          sed -i "s/^\s*\"version\":.*$/  \"version\": \"$NEW_TOAST_VERSION\",/" toast/package.json
+          cat toast/package.json
           echo "::set-output name=new-toast-version::$(echo $NEW_TOAST_VERSION)"
         shell: bash
       - name: npm publish
         run: |
-          cd toast-node-wrapper
+          cd toast
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

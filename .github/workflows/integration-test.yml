@@ -29,18 +29,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: toast
-      - name: Install nightly toolchain
-        uses: actions-rs/toolchain@v1
+      - uses: actions/setup-node@v3
         with:
-          toolchain: nightly
-          override: true
-      - uses: actions/setup-node@v2-beta
-        with:
-          node-version: "14"
+          node-version: "16"
           check-latest: true
-      - name: Run cargo build
-        working-directory: toast
-        run: cargo build
       - name: Install fd
         run: |
           cargo install fd-find
@@ -56,18 +48,16 @@ jobs:
           do
             cd $D;
             node -e 'const fs = require("fs"); const json = require("./package.json"); json.dependencies.toast = "file:../../toast/toast-node-wrapper"; fs.writeFileSync("./package.json", JSON.stringify(json, null, 2));';
-            yarn;
+            npm install;
             cd -;
           done
         shell: bash
-        env:
-          TOAST_PREVENT_INSTALL: true
       - name: build starters
         run: |
           for D in `fd . 'starters/' -t d -d 1`
           do
             cd $D;
-            TOAST_BINARY="$PWD/../../toast/target/debug/$BINARY_NAME" yarn build;
+            npm run build;
             cd -;
           done
         shell: bash
