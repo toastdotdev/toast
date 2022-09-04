@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "toast-cli": "toast-cli.mjs"
+    "toast": "toast-cli.mjs"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -17,6 +17,9 @@
     "@changesets/cli": "^2.24.4",
     "@toastdotdev/lib": "0.0.1",
     "cac": "6.7.12",
-    "module-alias": "^2.2.2"
+    "module-alias": "^2.2.2",
+    "preact-render-to-string": "^5.2.2",
+    "react-helmet": "^6.1.0",
+    "preact": "10.10.6"
   }
 }
