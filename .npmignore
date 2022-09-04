@@ -1,0 +1,7 @@
+.changeset
+.github
+docs
+imgs
+node_modules
+.dockerignore
+CONTRIBUTING.md
