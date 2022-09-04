@@ -8,7 +8,8 @@
     "toast-cli": "toast-cli.mjs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "release": "echo \"releasing\""
   },
   "author": "",
   "license": "ISC",
