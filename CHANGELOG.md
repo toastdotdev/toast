@@ -1,5 +1,11 @@
 # toast
 
+## 0.5.3
+
+### Patch Changes
+
+- 934cd6e: include deps and fix cli
+
 ## 0.5.2
 
 ### Patch Changes
