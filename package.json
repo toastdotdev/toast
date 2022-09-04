@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "main": "index.js",
-  "repository": "git@github.com:ChristopherBiscardi/rusty-toast.git",
+  "repository": "git@github.com:ChristopherBiscardi/toast.git",
   "author": "christopherbiscardi <chris@christopherbiscardi.com> (@chrisbiscardi)",
   "license": "MIT",
   "workspaces": [
-    "toast-node-wrapper",
-    "test-toast-site"
+    "toast"
   ],
   "engines": {
     "node": ">=14.13.0"
