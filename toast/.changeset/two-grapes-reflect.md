@@ -2,4 +2,4 @@
 "toast": patch
 ---
 
-Do a release of 0.5
+Do 0.5 release
