@@ -33,11 +33,19 @@ cli
     let things = incremental(inputPath, outputPath);
 
     PERF && performance.mark("importing-toast");
-    let toast = await import(path.resolve(inputPath, "toast.js"));
-    PERF && performance.mark("done-importing-toast");
 
-    await toast.sourceData({ setDataForSlug: userSetDataForSlug });
-    PERF && performance.mark("done-source-data");
+    let toast;
+    try {
+      toast = await import(path.resolve(inputPath, "toast.js"));
+      PERF && performance.mark("done-importing-toast");
+    } catch (e) {
+      console.warn(e);
+    }
+
+    if (!!toast) {
+      await toast.sourceData({ setDataForSlug: userSetDataForSlug });
+      PERF && performance.mark("done-source-data");
+    }
 
     doneSourcingData();
     let urls = await things;
