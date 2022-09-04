@@ -12,7 +12,6 @@ jobs:
         os: [ubuntu-latest]
 
   do-npm-release:
-    needs: [do-binary-release]
     name: npm publish
     runs-on: ubuntu-latest
     outputs:
