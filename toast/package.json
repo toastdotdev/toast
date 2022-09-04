@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@changesets/cli": "^2.24.4",
     "@toastdotdev/lib": "0.0.1",
     "cac": "6.7.12",
     "module-alias": "^2.2.2"
