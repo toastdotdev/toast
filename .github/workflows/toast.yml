@@ -6,11 +6,6 @@ on:
 name: Toast Release Pipeline
 
 jobs:
-  test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-
   do-npm-release:
     name: npm publish
     runs-on: ubuntu-latest
